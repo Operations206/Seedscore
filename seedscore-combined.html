@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skin Within — Seedscore Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Brand Tokens ── */
+:root {
+  --red:       #3D0000;
+  --red-mid:   #5a1010;
+  --dp:        #c89c95;
+  --mp:        #e0b1a9;
+  --lp:        #f9f2f0;
+  --bg:        #fdf7f5;
+  --card:      #ffffff;
+  --beige:     #e8d9cc;
+  --grey:      #666769;
+  --text:      #3a2a28;
+  --text-dim:  #9a7e7a;
+  --border:    rgba(200,156,149,0.25);
+  --green:     #4a7c59;
+  --yellow:    #8a6c2a;
+  --radius:    8px;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════ */
+#login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 48px 44px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 4px 32px rgba(61,0,0,0.08);
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.logo-icon {
+  width: 44px; height: 44px;
+  background: var(--red);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--lp); flex-shrink: 0;
+}
+
+.login-logo h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--red);
+}
+.login-logo span { font-size: 11px; color: var(--text-dim); display: block; letter-spacing: 0.05em; }
+
+.role-tabs {
+  display: flex;
+  background: var(--lp);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 26px;
+}
+
+.role-tab {
+  flex: 1; text-align: center;
+  padding: 9px; font-size: 13px; font-weight: 600;
+  color: var(--text-dim); border-radius: 6px;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+
+.role-tab.active {
+  background: var(--red); color: var(--lp);
+  box-shadow: 0 1px 6px rgba(61,0,0,0.2);
+}
+
+.login-card h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px; font-weight: 600;
+  color: var(--red); margin-bottom: 4px;
+}
+.login-card > p { font-size: 13px; color: var(--text-dim); margin-bottom: 22px; }
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text-dim); margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.field input {
+  width: 100%; background: var(--lp);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 14px; font-size: 14px;
+  color: var(--text); font-family: 'Jost', sans-serif;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field input:focus { border-color: var(--dp); box-shadow: 0 0 0 3px rgba(200,156,149,0.15); }
+
+.btn-primary {
+  width: 100%; background: var(--red);
+  border: none; border-radius: var(--radius);
+  padding: 12px; font-size: 14px; font-weight: 600;
+  color: var(--lp); font-family: 'Jost', sans-serif;
+  cursor: pointer; transition: background 0.15s, transform 0.1s;
+  margin-top: 6px; letter-spacing: 0.05em;
+}
+.btn-primary:hover { background: var(--red-mid); transform: translateY(-1px); }
+
+.login-error {
+  background: rgba(61,0,0,0.06);
+  border: 1px solid rgba(61,0,0,0.2);
+  border-radius: var(--radius);
+  padding: 9px 13px; font-size: 13px;
+  color: var(--red); margin-bottom: 14px; display: none;
+}
+
+.login-hint {
+  margin-top: 20px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-dim); line-height: 1.8;
+}
+.login-hint strong { color: var(--text); }
+
+/* ══════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════ */
+#ho-app, #fx-app { display: none; }
+
+.topbar {
+  background: var(--red);
+  padding: 0 32px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 20;
+  box-shadow: 0 2px 12px rgba(61,0,0,0.2);
+}
+
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+
+.topbar-logo {
+  width: 34px; height: 34px;
+  background: rgba(249,242,240,0.15);
+  border: 1px solid rgba(249,242,240,0.2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700; font-size: 18px; color: var(--lp);
+}
+
+.topbar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 700; color: var(--lp);
+}
+.topbar-subtitle { font-size: 11px; color: rgba(249,242,240,0.6); letter-spacing: 0.04em; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(249,242,240,0.12);
+  border: 1px solid rgba(249,242,240,0.2);
+  border-radius: 20px; padding: 5px 14px 5px 8px;
+  font-size: 13px; color: var(--lp);
+}
+
+.user-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--dp);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--red);
+}
+
+.btn-logout {
+  background: none; border: 1px solid rgba(249,242,240,0.3);
+  border-radius: var(--radius); padding: 6px 14px;
+  font-size: 12px; font-weight: 500; color: rgba(249,242,240,0.7);
+  font-family: 'Jost', sans-serif;
+  cursor: pointer; transition: all 0.15s; letter-spacing: 0.03em;
+}
+.btn-logout:hover { color: var(--lp); border-color: rgba(249,242,240,0.6); }
+
+/* ── Nav tabs (franchisee view) ── */
+.app-nav {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex; gap: 0;
+}
+
+.nav-tab {
+  padding: 14px 20px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 600; }
+
+/* ── Content ── */
+.content {
+  max-width: 1160px;
+  margin: 32px auto;
+  padding: 0 32px;
+}
+
+.page-heading { margin-bottom: 28px; }
+.page-heading h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px; font-weight: 700; color: var(--red);
+}
+.page-heading p { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+/* ── Stat Cards ── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 26px;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.04);
+}
+
+.card-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.card-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px; font-weight: 700;
+  color: var(--red); line-height: 1;
+}
+.card-sub { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+.card-accent { border-left: 3px solid var(--dp); }
+.card-green  { border-left: 3px solid #4a7c59; }
+.card-yellow { border-left: 3px solid #c4972a; }
+.card-red    { border-left: 3px solid var(--red); }
+
+/* ── Table card ── */
+.table-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.04);
+}
+
+.table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px; flex-wrap: wrap;
+}
+
+.table-toolbar h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 600; color: var(--red);
+}
+
+.toolbar-right { display: flex; align-items: center; gap: 10px; }
+
+.search-input {
+  background: var(--lp);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 13px; font-size: 13px;
+  color: var(--text); font-family: 'Jost', sans-serif;
+  outline: none; width: 220px;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--dp); }
+.search-input::placeholder { color: var(--text-dim); }
+
+select.filter-select {
+  background: var(--lp);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px; font-size: 13px;
+  color: var(--text); font-family: 'Jost', sans-serif;
+  outline: none; cursor: pointer;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+thead th {
+  text-align: left; padding: 12px 22px;
+  font-size: 10px; font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap; cursor: pointer; user-select: none;
+  background: var(--lp);
+}
+thead th:hover { color: var(--text); }
+thead th.sorted { color: var(--red); }
+thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+thead th.sorted .sort-arrow { opacity: 1; }
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--lp); }
+
+td { padding: 13px 22px; vertical-align: middle; }
+
+.rank { font-weight: 700; color: var(--text-dim); font-size: 13px; font-family: 'Cormorant Garamond', serif; }
+.rank.gold   { color: #b8860b; }
+.rank.silver { color: #888; }
+.rank.bronze { color: #8B5e3c; }
+
+.person-name { font-weight: 600; color: var(--text); }
+
+.score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.score-bar-bg {
+  flex: 1; height: 5px;
+  background: var(--lp);
+  border-radius: 99px; overflow: hidden;
+  min-width: 80px; border: 1px solid var(--border);
+}
+.score-bar-fill { height: 100%; border-radius: 99px; }
+.score-num { font-weight: 700; font-size: 15px; min-width: 36px; text-align: right; font-family: 'Cormorant Garamond', serif; }
+
+.badge-status {
+  display: inline-block; padding: 3px 11px;
+  border-radius: 99px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.badge-pass   { background: rgba(74,124,89,0.12); color: #2e6643; border: 1px solid rgba(74,124,89,0.3); }
+.badge-review { background: rgba(196,151,42,0.12); color: #7a5c12; border: 1px solid rgba(196,151,42,0.3); }
+.badge-fail   { background: rgba(61,0,0,0.08); color: var(--red); border: 1px solid rgba(61,0,0,0.2); }
+
+.trend { font-size: 13px; font-weight: 600; }
+.trend.up   { color: #4a7c59; }
+.trend.down { color: var(--red); }
+.trend.flat { color: var(--text-dim); }
+
+.table-footer {
+  padding: 12px 22px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-dim);
+  background: var(--lp);
+}
+
+/* ══════════════════════════════════════
+   FRANCHISEE DASHBOARD PANELS
+══════════════════════════════════════ */
+.panel { display: none; }
+.panel.active { display: block; }
+
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 26px;
+  margin-bottom: 22px;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.04);
+}
+.chart-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 600; color: var(--red);
+  margin-bottom: 20px;
+}
+.chart-wrap { position: relative; width: 100%; }
+.chart-wrap svg { width: 100%; height: 180px; overflow: visible; }
+.chart-x-labels {
+  display: flex; justify-content: space-between;
+  padding: 8px 0 0; font-size: 11px; color: var(--text-dim);
+}
+
+.history-table td, .history-table th { padding: 11px 18px; }
+
+.score-hero {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 56px; font-weight: 700;
+  color: var(--red); line-height: 1;
+}
+
+/* ══════════════════════════════════════
+   MBR FORM (in-portal)
+══════════════════════════════════════ */
+.mbr-wrap {
+  background: var(--bg);
+}
+
+.mbr-header {
+  background: var(--red);
+  padding: 2.4rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+.mbr-header::after {
+  content: ''; position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%); width: 50px; height: 2px;
+  background: var(--mp);
+}
+.mbr-header .logo-tag {
+  font-size: 0.58rem; letter-spacing: 0.4em;
+  color: var(--mp); text-transform: uppercase;
+  margin-bottom: 0.6rem; font-weight: 500;
+  display: block;
+}
+.mbr-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.6rem,4vw,2.6rem); font-weight: 700;
+  color: var(--lp); line-height: 1.1;
+}
+.mbr-header h2 em { color: var(--mp); font-style: italic; }
+.mbr-header p {
+  font-size: 0.78rem; color: rgba(249,242,240,0.6);
+  margin-top: 0.5rem; font-weight: 300; letter-spacing: 0.04em;
+}
+
+.seed-banner {
+  background: linear-gradient(135deg, var(--red), var(--red-mid));
+  border-radius: 12px; padding: 1.4rem 1.8rem;
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 1.2rem;
+}
+.seed-icon { font-size: 1.8rem; flex-shrink: 0; }
+.seed-text { font-size: 0.81rem; line-height: 1.7; color: var(--beige); }
+.seed-text strong { color: var(--mp); font-weight: 600; }
+
+.mbr-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.8rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.04);
+  transition: border-color 0.3s;
+}
+.mbr-section:focus-within { border-color: var(--dp); }
+
+.section-header {
+  display: flex; align-items: center; gap: 0.9rem;
+  margin-bottom: 1.4rem; padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  width: 26px; height: 26px;
+  background: var(--red); color: var(--lp);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 600; flex-shrink: 0;
+}
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; color: var(--red); font-weight: 600;
+}
+.section-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.1rem; }
+
+.mbr-section label {
+  display: block; font-size: 0.74rem; color: var(--grey);
+  margin-bottom: 0.4rem; letter-spacing: 0.03em; font-weight: 500;
+}
+
+.mbr-section input[type="text"],
+.mbr-section input[type="number"],
+.mbr-section input[type="month"],
+.mbr-section input[type="email"],
+.mbr-section select,
+.mbr-section textarea {
+  width: 100%; background: var(--lp);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-family: 'Jost', sans-serif;
+  font-size: 0.88rem; padding: 0.7rem 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none; margin-bottom: 1rem;
+}
+.mbr-section input:focus,
+.mbr-section select:focus,
+.mbr-section textarea:focus {
+  border-color: var(--dp);
+  box-shadow: 0 0 0 3px rgba(200,156,149,0.15);
+}
+.mbr-section textarea { resize: vertical; min-height: 70px; }
+.mbr-section select option { background: #fff; }
+
+.two-col  { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.three-col{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+.hint {
+  font-size: 0.7rem; color: var(--text-dim);
+  margin-top: -0.7rem; margin-bottom: 0.9rem; font-style: italic;
+}
+
+.check-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.5rem; margin-bottom: 1rem;
+}
+.check-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--lp); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.65rem 0.8rem;
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.check-item:hover { border-color: var(--mp); }
+.check-item.checked { border-color: var(--dp); background: rgba(200,156,149,0.1); }
+.check-item * { pointer-events: none; }
+.check-box {
+  width: 16px; height: 16px;
+  border: 1.5px solid rgba(200,156,149,0.4);
+  border-radius: 4px; flex-shrink: 0;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.check-item.checked .check-box { background: var(--dp); border-color: var(--dp); }
+.check-tick { display: none; font-size: 0.65rem; color: #fff; font-weight: 700; line-height: 1; }
+.check-item.checked .check-tick { display: block; }
+.check-label { font-size: 0.79rem; color: var(--text); line-height: 1.3; }
+
+.conditional {
+  display: none; background: rgba(200,156,149,0.06);
+  border: 1px solid rgba(200,156,149,0.2);
+  border-radius: 8px; padding: 1.2rem;
+  margin-top: -0.5rem; margin-bottom: 1rem;
+}
+.conditional.show { display: block; }
+.conditional label { color: var(--text-dim); }
+
+.slider-wrap { margin-bottom: 1rem; }
+.slider-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.4rem;
+}
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  background: linear-gradient(to right, var(--dp) 0%, var(--dp) var(--val, 50%), var(--border) var(--val, 50%), var(--border) 100%);
+  border-radius: 4px; outline: none; border: none; padding: 0; margin-bottom: 0; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  background: var(--red); border-radius: 50%;
+  box-shadow: 0 0 6px rgba(61,0,0,0.25);
+}
+.slider-val { text-align: right; font-size: 0.78rem; color: var(--red); font-weight: 600; margin-top: 0.3rem; }
+
+.submit-btn {
+  width: 100%; background: var(--red); color: var(--lp);
+  font-family: 'Jost', sans-serif; font-size: 0.9rem; font-weight: 600;
+  padding: 1.1rem; border: none; border-radius: 10px; cursor: pointer;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  transition: all 0.2s; margin-top: 0.5rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.submit-btn:hover { background: var(--red-mid); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(61,0,0,0.2); }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Loading & Results */
+.loading-wrap { display: none; text-align: center; padding: 4rem 1rem; }
+.loading-wrap.active { display: block; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--border);
+  border-top-color: var(--dp);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin: 0 auto 1.2rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--red); font-style: italic; }
+.loading-sub { color: var(--text-dim); font-size: 0.78rem; margin-top: 0.4rem; }
+
+.results-wrap { display: none; }
+.results-wrap.active { display: block; }
+
+.milestone-banner {
+  display: none; background: var(--red);
+  border-radius: 14px; padding: 2rem;
+  text-align: center; margin-bottom: 1.5rem;
+  animation: milestoneGlow 2s ease-in-out infinite alternate;
+}
+@keyframes milestoneGlow {
+  from { box-shadow: 0 0 20px rgba(61,0,0,0.2); }
+  to   { box-shadow: 0 0 50px rgba(61,0,0,0.5); }
+}
+.milestone-banner.show { display: block; }
+.milestone-confetti { font-size: 1.8rem; margin-bottom: 0.8rem; letter-spacing: 0.3em; animation: bounce 0.7s ease-in-out infinite alternate; }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+.milestone-title { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 700; color: var(--lp); margin-bottom: 0.4rem; }
+.milestone-subtitle { font-size: 0.84rem; color: var(--beige); line-height: 1.7; margin-bottom: 1rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+.milestone-badge { display: inline-block; background: var(--mp); color: var(--red); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.35rem 1.1rem; border-radius: 20px; }
+
+.score-hero-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 2.4rem;
+  text-align: center; margin-bottom: 1.2rem;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.05);
+}
+.score-label {
+  font-size: 0.58rem; letter-spacing: 0.35em;
+  color: var(--dp); text-transform: uppercase; margin-bottom: 0.8rem; font-weight: 600;
+}
+.score-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 5rem; font-weight: 700; color: var(--red); line-height: 1; margin-bottom: 0.3rem;
+}
+.score-number span { color: var(--text-dim); font-size: 2rem; }
+.score-tier {
+  display: inline-block; padding: 0.3rem 1rem;
+  border-radius: 20px; font-size: 0.74rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.2rem;
+}
+.tier-dormant   { background: rgba(61,0,0,0.08); color: var(--red); border: 1px solid rgba(61,0,0,0.2); }
+.tier-sprouting { background: rgba(200,156,149,0.15); color: var(--dp); border: 1px solid rgba(200,156,149,0.4); }
+.tier-growing   { background: rgba(224,177,169,0.2); color: #8a5a54; border: 1px solid rgba(224,177,169,0.5); }
+.tier-thriving  { background: var(--red); color: var(--lp); border: 1px solid var(--red); }
+
+.growth-bar-bg { height: 5px; background: var(--lp); border-radius: 8px; overflow: hidden; margin-top: 0.5rem; border: 1px solid var(--border); }
+.growth-bar-fill { height: 100%; border-radius: 8px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); background: linear-gradient(90deg, var(--mp), var(--dp), var(--red)); width: 0%; }
+.growth-stages { display: flex; justify-content: space-between; margin-top: 0.5rem; }
+.growth-stage { font-size: 0.6rem; color: var(--text-dim); text-align: center; }
+.growth-stage.active { color: var(--red); font-weight: 600; }
+
+.metrics-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.8rem; margin-bottom: 1.2rem; }
+.metric-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.1rem; text-align: center;
+  box-shadow: 0 1px 4px rgba(61,0,0,0.04);
+}
+.metric-val { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; color: var(--red); line-height: 1; margin-bottom: 0.3rem; }
+.metric-name { font-size: 0.64rem; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; }
+
+.milestones-track, .feedback-card, .actions-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.8rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.04);
+}
+.milestones-track h3, .feedback-card h3, .actions-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; color: var(--red);
+  margin-bottom: 1rem; font-weight: 600;
+}
+
+.milestone-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+.milestone-row:last-child { border-bottom: none; }
+.m-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; flex-shrink: 0; background: var(--lp);
+}
+.m-dot.achieved { border-color: var(--dp); background: rgba(200,156,149,0.12); }
+.m-dot.next-up { border-color: var(--red); background: rgba(61,0,0,0.05); animation: pulseDot 1.5s ease-in-out infinite; }
+@keyframes pulseDot {
+  0%,100% { box-shadow: 0 0 4px rgba(61,0,0,0.1); }
+  50%      { box-shadow: 0 0 14px rgba(61,0,0,0.3); }
+}
+.m-info { flex: 1; }
+.m-name { font-size: 0.83rem; color: var(--text); font-weight: 500; }
+.m-sub { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.15rem; }
+.m-check { font-size: 0.9rem; color: var(--dp); }
+
+.next-nudge {
+  background: rgba(61,0,0,0.04); border: 1px solid rgba(61,0,0,0.14);
+  border-radius: 12px; padding: 1.2rem 1.5rem;
+  margin-bottom: 1.2rem; display: none; align-items: center; gap: 1rem;
+}
+.next-nudge-icon { font-size: 1.5rem; flex-shrink: 0; }
+.next-nudge-text { font-size: 0.82rem; color: var(--red); line-height: 1.6; }
+.next-nudge-text strong { font-weight: 600; }
+
+.feedback-body { font-size: 0.87rem; line-height: 1.8; color: var(--text); white-space: pre-wrap; }
+
+.action-item {
+  display: flex; align-items: flex-start; gap: 0.8rem;
+  padding: 0.75rem 0; border-bottom: 1px solid var(--border);
+  font-size: 0.83rem; color: var(--text); line-height: 1.6;
+}
+.action-item:last-child { border-bottom: none; }
+.action-num {
+  width: 22px; height: 22px;
+  background: var(--red); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: var(--lp); flex-shrink: 0; margin-top: 1px;
+}
+
+.sent-notice {
+  border-radius: 10px; padding: 1rem 1.2rem;
+  margin-bottom: 1.2rem; font-size: 0.8rem; line-height: 1.6; text-align: center;
+}
+.sent-notice.ok { background: rgba(200,156,149,0.08); border: 1px solid rgba(200,156,149,0.3); color: var(--text-dim); }
+.sent-notice.ok strong { color: var(--red); }
+.sent-notice.warn { background: rgba(61,0,0,0.04); border: 1px solid rgba(61,0,0,0.14); color: var(--red); }
+
+.restart-btn {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border); color: var(--text-dim);
+  font-family: 'Jost', sans-serif; font-size: 0.8rem;
+  padding: 0.8rem; border-radius: 8px;
+  cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; margin-top: 0.5rem;
+}
+.restart-btn:hover { border-color: var(--dp); color: var(--text); }
+
+.month-tag {
+  display: inline-block;
+  background: rgba(200,156,149,0.12); border: 1px solid rgba(200,156,149,0.3);
+  color: var(--dp); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.25rem 0.8rem;
+  border-radius: 20px; margin-bottom: 1.4rem; font-weight: 600;
+}
+
+.error-msg {
+  background: rgba(61,0,0,0.06); border: 1px solid rgba(61,0,0,0.2);
+  color: var(--red); border-radius: 8px; padding: 1rem;
+  font-size: 0.82rem; text-align: center; margin-top: 1rem; display: none;
+}
+.error-msg.show { display: block; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .topbar { padding: 0 16px; }
+  .app-nav { padding: 0 16px; }
+  .content { padding: 0 16px; margin-top: 20px; }
+  .login-card { padding: 28px 24px; }
+  .cards { grid-template-columns: 1fr 1fr; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .metrics-row { grid-template-columns: 1fr 1fr; }
+  .check-grid { grid-template-columns: 1fr; }
+  .score-number { font-size: 3.5rem; }
+  td:nth-child(5), th:nth-child(5) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">S</div>
+      <div>
+        <h1>Skin Within</h1>
+        <span>Seedscore Performance Portal</span>
+      </div>
+    </div>
+
+    <div class="role-tabs">
+      <div class="role-tab active" id="tab-ho" onclick="switchTab('ho')">Head Office</div>
+      <div class="role-tab"        id="tab-fx" onclick="switchTab('fx')">Franchisee</div>
+    </div>
+
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
+
+    <form id="login-form">
+      <h2 id="login-title">Head Office sign in</h2>
+      <p  id="login-desc">Access the full network score dashboard.</p>
+      <div class="field">
+        <label for="l-username">Username</label>
+        <input type="text" id="l-username" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="l-password">Password</label>
+        <input type="password" id="l-password" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-primary">Sign in →</button>
+    </form>
+
+    <div class="login-hint" id="login-hint">
+      Demo — Head Office: <strong>admin</strong> / <strong>seedscore2026</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     HEAD OFFICE APP
+═══════════════════════════════════════ -->
+<div id="ho-app">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">S</div>
+      <div>
+        <div class="topbar-title">Skin Within — Seedscore</div>
+        <div class="topbar-subtitle">Head Office Dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="user-avatar">HO</div>
+        <span>Head Office</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-heading">
+      <h2>Network Score Overview</h2>
+      <p>All franchisee Seed Scores as of <span id="ho-date"></span></p>
+    </div>
+
+    <div class="cards">
+      <div class="card card-accent">
+        <div class="card-label">Total Franchisees</div>
+        <div class="card-value" id="stat-total">—</div>
+        <div class="card-sub">across all regions</div>
+      </div>
+      <div class="card card-green">
+        <div class="card-label">Average Score</div>
+        <div class="card-value" id="stat-avg">—</div>
+        <div class="card-sub">out of 100</div>
+      </div>
+      <div class="card card-yellow">
+        <div class="card-label">Passing</div>
+        <div class="card-value" id="stat-pass">—</div>
+        <div class="card-sub">score ≥ 70</div>
+      </div>
+      <div class="card card-red">
+        <div class="card-label">Need Review</div>
+        <div class="card-value" id="stat-fail">—</div>
+        <div class="card-sub">score &lt; 50</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-toolbar">
+        <h3>Franchisee Seed Scores</h3>
+        <div class="toolbar-right">
+          <input class="search-input" type="text" id="ho-search" placeholder="Search by name…" oninput="renderHOTable()" />
+          <select class="filter-select" id="ho-region" onchange="renderHOTable()">
+            <option value="">All regions</option>
+          </select>
+          <select class="filter-select" id="ho-status" onchange="renderHOTable()">
+            <option value="">All statuses</option>
+            <option value="Pass">Pass</option>
+            <option value="Review">Review</option>
+            <option value="Fail">Fail</option>
+          </select>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th onclick="hoSort('rank')">#<span class="sort-arrow" id="ha-rank"></span></th>
+            <th onclick="hoSort('name')">Franchisee<span class="sort-arrow" id="ha-name"></span></th>
+            <th onclick="hoSort('region')">Region<span class="sort-arrow" id="ha-region"></span></th>
+            <th onclick="hoSort('score')">Seed Score<span class="sort-arrow" id="ha-score"></span></th>
+            <th onclick="hoSort('trend')">Trend<span class="sort-arrow" id="ha-trend"></span></th>
+            <th onclick="hoSort('status')">Status<span class="sort-arrow" id="ha-status"></span></th>
+          </tr>
+        </thead>
+        <tbody id="ho-tbody"></tbody>
+      </table>
+      <div class="table-footer" id="ho-footer"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FRANCHISEE APP
+═══════════════════════════════════════ -->
+<div id="fx-app">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">S</div>
+      <div>
+        <div class="topbar-title">Skin Within — Seedscore</div>
+        <div class="topbar-subtitle" id="fx-topbar-sub">My Dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="user-avatar" id="fx-avatar">—</div>
+        <span id="fx-username-label">—</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Nav tabs -->
+  <nav class="app-nav">
+    <div class="nav-tab active" id="tab-scores" onclick="showPanel('scores')">🌱 My Scores</div>
+    <div class="nav-tab"       id="tab-mbr"    onclick="showPanel('mbr')">📋 Monthly Business Review</div>
+  </nav>
+
+  <main class="content">
+
+    <!-- SCORES PANEL -->
+    <div class="panel active" id="panel-scores">
+      <div class="page-heading">
+        <h2 id="fx-heading">My Scores</h2>
+        <p>Your performance history as of <span id="fx-date"></span></p>
+      </div>
+
+      <div class="cards">
+        <div class="card card-accent">
+          <div class="card-label">Latest Score</div>
+          <div class="score-hero" id="fx-latest">—</div>
+          <div class="card-sub" id="fx-latest-month">—</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">6-Month Average</div>
+          <div class="card-value" id="fx-avg">—</div>
+          <div class="card-sub">out of 100</div>
+        </div>
+        <div class="card card-yellow">
+          <div class="card-label">Network Rank</div>
+          <div class="card-value" id="fx-rank">—</div>
+          <div class="card-sub" id="fx-rank-sub">—</div>
+        </div>
+        <div class="card" id="fx-status-card">
+          <div class="card-label">Current Status</div>
+          <div style="margin-top:10px;" id="fx-status-badge">—</div>
+          <div class="card-sub" id="fx-status-sub">—</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Score Trend — Last 6 Months</h3>
+        <div class="chart-wrap">
+          <svg id="fx-chart" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="chart-x-labels" id="fx-chart-labels"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-toolbar"><h3>Score History</h3></div>
+        <table class="history-table">
+          <thead>
+            <tr><th>Period</th><th>Score</th><th>Change</th><th>Status</th></tr>
+          </thead>
+          <tbody id="fx-history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MBR PANEL -->
+    <div class="panel" id="panel-mbr">
+      <div class="mbr-wrap">
+        <div class="mbr-header">
+          <span class="logo-tag">Skin Within Aesthetics</span>
+          <h2>Monthly <em>Business Review</em></h2>
+          <p>Your monthly snapshot — helping us help you grow.</p>
+        </div>
+
+        <div class="month-tag" id="mbrMonthTag"></div>
+
+        <!-- MBR FORM -->
+        <div id="mbrFormWrap">
+          <div class="seed-banner">
+            <div class="seed-icon">🌱</div>
+            <div class="seed-text">
+              <strong>We gave you the seed. You must water it.</strong><br>
+              Complete this honest monthly review. Your personalised feedback will help you identify what's working, what needs attention, and exactly what to focus on next month.
+            </div>
+          </div>
+
+          <!-- 1: YOUR DETAILS -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">1</div><div><div class="section-title">Your Details</div><div class="section-desc">Tell us who you are and which month this review covers</div></div></div>
+            <div class="two-col">
+              <div><label>Your Full Name</label><input type="text" id="mbr-name" placeholder="e.g. Jane Smith"></div>
+              <div><label>Clinic / Location</label><input type="text" id="mbr-location" placeholder="e.g. Manchester North"></div>
+            </div>
+            <div class="two-col">
+              <div><label>Your Email Address <span style="color:var(--text-dim);font-weight:400;">(optional)</span></label><input type="email" id="mbr-email" placeholder="your@email.com"></div>
+              <div><label>Month this review covers</label><input type="month" id="mbr-reviewMonth"></div>
+            </div>
+          </div>
+
+          <!-- 2: CLIENTS & APPOINTMENTS -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">2</div><div><div class="section-title">Clients & Appointments</div><div class="section-desc">Your core numbers for this month</div></div></div>
+            <div class="two-col">
+              <div><label>Total paying clients this month</label><input type="number" id="mbr-payingClients" placeholder="0" min="0"></div>
+              <div><label>New clients this month</label><input type="number" id="mbr-newClients" placeholder="0" min="0"></div>
+            </div>
+            <div class="two-col">
+              <div><label>Returning / repeat clients</label><input type="number" id="mbr-returningClients" placeholder="0" min="0"></div>
+              <div><label>Cancelled or no-show appointments</label><input type="number" id="mbr-noShows" placeholder="0" min="0"></div>
+            </div>
+            <div class="two-col">
+              <div><label>Paying Skinade appointments this month</label><input type="number" id="mbr-skinade" placeholder="0" min="0"></div>
+              <div><label>Alumier products sold this month</label><input type="number" id="mbr-alumier" placeholder="0" min="0"></div>
+            </div>
+            <label>How many discounts have you given this month?</label>
+            <input type="number" id="mbr-discounts" placeholder="0" min="0">
+            <p class="hint">Be honest — discounting patterns help us identify pricing strategy opportunities.</p>
+            <label>What discounts or offers did you give?</label>
+            <textarea id="mbr-discountDetail" placeholder="e.g. 20% off first treatment, refer a friend £20 off..."></textarea>
+          </div>
+
+          <!-- 3: TREATMENT BREAKDOWN -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">3</div><div><div class="section-title">Treatment Breakdown</div><div class="section-desc">Which treatments did you perform most this month?</div></div></div>
+            <label>Treatments performed this month (tick all that apply)</label>
+            <div class="check-grid" id="mbr-treatmentChecks">
+              <div class="check-item" data-value="Botox / Anti-wrinkle"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Botox / Anti-wrinkle</span></div>
+              <div class="check-item" data-value="Dermal Fillers"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Dermal Fillers</span></div>
+              <div class="check-item" data-value="Profhilo"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Profhilo</span></div>
+              <div class="check-item" data-value="Skinboosters"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Skinboosters</span></div>
+              <div class="check-item" data-value="Polynucleotides"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Polynucleotides</span></div>
+              <div class="check-item" data-value="Chemical Peels"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Chemical Peels</span></div>
+              <div class="check-item" data-value="Microneedling"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Microneedling</span></div>
+              <div class="check-item" data-value="Fat dissolving"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Fat dissolving</span></div>
+              <div class="check-item" data-value="Skin consultations"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Skin consultations</span></div>
+              <div class="check-item" data-value="Other treatments"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Other treatments</span></div>
+            </div>
+            <label>Which was your most performed treatment this month?</label>
+            <input type="text" id="mbr-topTreatment" placeholder="e.g. Botox — approx. 12 appointments">
+            <label>Is there a treatment you feel you are under-utilising?</label>
+            <textarea id="mbr-underusedTreatment" placeholder="e.g. I rarely get Profhilo enquiries..."></textarea>
+          </div>
+
+          <!-- 4: DATABASE & OUTREACH -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">4</div><div><div class="section-title">Database & Outreach</div><div class="section-desc">Your database is your most valuable long-term asset</div></div></div>
+            <div class="two-col">
+              <div><label>New contacts added to database</label><input type="number" id="mbr-dbContacts" placeholder="0" min="0"></div>
+              <div><label>Existing clients personally followed up</label><input type="number" id="mbr-followUp" placeholder="0" min="0"></div>
+            </div>
+            <div class="two-col">
+              <div><label>Leaflets / flyers distributed</label><input type="number" id="mbr-leaflets" placeholder="0" min="0"></div>
+              <div><label>Business cards personally handed out</label><input type="number" id="mbr-bizCards" placeholder="0" min="0"></div>
+            </div>
+            <label>Did you ask clients for a referral or Google review?</label>
+            <select id="mbr-referralAsk">
+              <option value="">Select...</option>
+              <option value="Yes — multiple clients">Yes — multiple clients</option>
+              <option value="Yes — one or two clients">Yes — one or two clients</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <!-- 5: GOOGLE REVIEWS -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">5</div><div><div class="section-title">Google Reviews</div><div class="section-desc">Reviews are one of the most powerful tools for attracting new local clients</div></div></div>
+            <div class="two-col">
+              <div><label>Total Google reviews you currently have</label><input type="number" id="mbr-googleTotal" placeholder="0" min="0"></div>
+              <div><label>New Google reviews received this month</label><input type="number" id="mbr-googleNew" placeholder="0" min="0"></div>
+            </div>
+            <label>What is your current Google star rating?</label>
+            <select id="mbr-googleRating">
+              <option value="">Select...</option>
+              <option value="5.0">⭐⭐⭐⭐⭐ 5.0</option>
+              <option value="4.9">⭐⭐⭐⭐⭐ 4.9</option>
+              <option value="4.8">⭐⭐⭐⭐⭐ 4.8</option>
+              <option value="4.7">⭐⭐⭐⭐½ 4.7</option>
+              <option value="4.5–4.6">⭐⭐⭐⭐½ 4.5–4.6</option>
+              <option value="4.0–4.4">⭐⭐⭐⭐ 4.0–4.4</option>
+              <option value="Below 4.0">Below 4.0</option>
+              <option value="Not set up yet">Not set up on Google yet</option>
+            </select>
+            <label>Did you receive any negative reviews this month? (optional)</label>
+            <textarea id="mbr-negativeReview" placeholder="e.g. One 3-star review — I responded professionally..."></textarea>
+          </div>
+
+          <!-- 6: MODEL DAY -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">6</div><div><div class="section-title">Model Day</div><div class="section-desc">Model days are a powerful way to build your portfolio and attract new clients</div></div></div>
+            <label>Have you organised a model day this month?</label>
+            <select id="mbr-modelDay" onchange="mbrToggle('mbr-modelDayPanel', this.value==='Yes')">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+              <option value="Planned for next month">Planned for next month</option>
+            </select>
+            <div class="conditional" id="mbr-modelDayPanel">
+              <label>How many models did you see?</label>
+              <input type="number" id="mbr-modelDayAttendees" placeholder="0" min="0">
+              <label>How many models rebooked as paying clients?</label>
+              <input type="number" id="mbr-modelDayRebooked" placeholder="0" min="0">
+              <label>How did you advertise your model day?</label>
+              <div class="check-grid" id="mbr-modelDayAds">
+                <div class="check-item" data-value="Instagram / Facebook post"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Instagram / Facebook post</span></div>
+                <div class="check-item" data-value="Stories / Reels"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Stories / Reels</span></div>
+                <div class="check-item" data-value="Email / text to database"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Email / text to database</span></div>
+                <div class="check-item" data-value="Word of mouth"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Word of mouth</span></div>
+                <div class="check-item" data-value="Leaflets / flyers"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Leaflets / flyers</span></div>
+                <div class="check-item" data-value="Local Facebook groups"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Local Facebook groups</span></div>
+                <div class="check-item" data-value="WhatsApp group"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">WhatsApp group</span></div>
+              </div>
+              <label>Did any models convert to paying clients?</label>
+              <select id="mbr-modelConvert">
+                <option value="">Select...</option>
+                <option value="Yes — multiple">Yes — multiple</option>
+                <option value="Yes — one">Yes — one</option>
+                <option value="Not yet but follow-up planned">Not yet but follow-up planned</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 7: EVENTS -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">7</div><div><div class="section-title">Events & Launch Activity</div><div class="section-desc">Quarterly and launch events</div></div></div>
+            <label>Have you held a quarterly or launch event this month?</label>
+            <select id="mbr-heldEvent" onchange="mbrToggle('mbr-heldEventPanel', this.value==='Yes')">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+            <div class="conditional" id="mbr-heldEventPanel">
+              <label>When was the event held?</label>
+              <input type="text" id="mbr-lastEventDate" placeholder="e.g. 14 February 2026">
+              <label>Where was it hosted?</label>
+              <input type="text" id="mbr-lastEventVenue" placeholder="e.g. your clinic, a partner venue...">
+              <label>What offers or discounts did you run?</label>
+              <textarea id="mbr-lastEventOffers" placeholder="e.g. 15% off bookings made on the night..."></textarea>
+              <div class="two-col">
+                <div><label>How many people attended?</label><input type="number" id="mbr-lastEventAttendees" placeholder="0" min="0"></div>
+                <div><label>Bookings or leads generated</label><input type="number" id="mbr-lastEventLeads" placeholder="0" min="0"></div>
+              </div>
+            </div>
+            <label>When is your next event due?</label>
+            <input type="text" id="mbr-nextEventDate" placeholder="e.g. June 2026, or 'Not yet planned'">
+            <label>What is your plan for your next event?</label>
+            <textarea id="mbr-nextEventPlan" placeholder="Venue ideas, theme, treatments to showcase, who you'll invite..."></textarea>
+            <label>Have you thought about discounts and offers for your next event?</label>
+            <textarea id="mbr-nextEventOffers" placeholder="e.g. Early bird booking offer, bring a friend discount..."></textarea>
+          </div>
+
+          <!-- 8: NETWORKING -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">8</div><div><div class="section-title">Networking & In-Person Outreach</div><div class="section-desc">Real relationships build real businesses</div></div></div>
+            <label>Which of these did you do this month?</label>
+            <div class="check-grid" id="mbr-networkingChecks">
+              <div class="check-item" data-value="BNI / business networking"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">BNI / business networking</span></div>
+              <div class="check-item" data-value="Walking or social club"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Walking / social club</span></div>
+              <div class="check-item" data-value="Ran a stand or pop-up"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Ran a stand or pop-up</span></div>
+              <div class="check-item" data-value="Hosted or co-hosted a client event"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Hosted / co-hosted event</span></div>
+              <div class="check-item" data-value="Local business partnership visit"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Local business partnership</span></div>
+              <div class="check-item" data-value="Contacted local press or community media"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Press / community media</span></div>
+              <div class="check-item" data-value="Charity or community event"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">Charity / community event</span></div>
+              <div class="check-item" data-value="1-to-1 referral meeting"><div class="check-box"><span class="check-tick">✓</span></div><span class="check-label">1-to-1 referral meeting</span></div>
+            </div>
+            <label>Have you attended any social clubs this month?</label>
+            <select id="mbr-socialClubs" onchange="mbrToggle('mbr-socialClubPanel', this.value==='Yes')">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+            <div class="conditional" id="mbr-socialClubPanel">
+              <label>Which clubs are you attending?</label>
+              <input type="text" id="mbr-clubNames" placeholder="e.g. PADDEN walking group, local running club...">
+              <label>Have these led to any new bookings?</label>
+              <select id="mbr-clubBookings">
+                <option value="">Select...</option>
+                <option value="Yes — multiple bookings">Yes — multiple bookings</option>
+                <option value="Yes — one booking">Yes — one booking</option>
+                <option value="Not yet but promising">Not yet but promising</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <label>Total number of external events attended this month</label>
+            <input type="number" id="mbr-totalEvents" placeholder="0" min="0">
+            <label>Details of your next planned events or activities</label>
+            <textarea id="mbr-nextEvents" placeholder="What's coming up — networking events, pop-ups, social clubs..."></textarea>
+          </div>
+
+          <!-- 9: WHATSAPP & EMAIL -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">9</div><div><div class="section-title">WhatsApp & Email Communication</div><div class="section-desc">Consistent communication keeps your community warm and your diary full</div></div></div>
+            <label>Do you have a WhatsApp community group?</label>
+            <select id="mbr-wasCommunity" onchange="mbrToggle('mbr-waCommunityPanel', this.value==='Yes')">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+              <option value="Setting one up">Setting one up</option>
+            </select>
+            <div class="conditional" id="mbr-waCommunityPanel">
+              <label>How many patients are in your community group?</label>
+              <input type="number" id="mbr-waCommunityCount" placeholder="0" min="0">
+              <label>Do you post at least once a week?</label>
+              <select id="mbr-waWeeklyPost">
+                <option value="">Select...</option>
+                <option value="Yes — every week">Yes — every week</option>
+                <option value="Most weeks">Most weeks</option>
+                <option value="Occasionally">Occasionally</option>
+                <option value="No — need to be more consistent">No — need to be more consistent</option>
+              </select>
+              <label>What kind of content do you post? (optional)</label>
+              <textarea id="mbr-waContent" placeholder="e.g. appointment reminders, offers, treatment tips..."></textarea>
+            </div>
+            <label>Do you have a WhatsApp model group?</label>
+            <select id="mbr-wasModel" onchange="mbrToggle('mbr-waModelPanel', this.value==='Yes')">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+              <option value="Planning to create one">Planning to create one</option>
+            </select>
+            <div class="conditional" id="mbr-waModelPanel">
+              <label>How many patients are in your model group?</label>
+              <input type="number" id="mbr-waModelCount" placeholder="0" min="0">
+            </div>
+            <label>Do you email your patient list weekly with rebooking reminders or offers?</label>
+            <select id="mbr-emailWeekly">
+              <option value="">Select...</option>
+              <option value="Yes — every week">Yes — every week</option>
+              <option value="Most weeks">Most weeks</option>
+              <option value="Once or twice a month">Once or twice a month</option>
+              <option value="Rarely">Rarely</option>
+              <option value="No — not doing this yet">No — not doing this yet</option>
+            </select>
+            <label>What do your emails typically include? (optional)</label>
+            <textarea id="mbr-emailContent" placeholder="e.g. treatment of the month, seasonal offers..."></textarea>
+          </div>
+
+          <!-- 10: SOCIAL MEDIA -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">10</div><div><div class="section-title">Social Media</div><div class="section-desc">Consistency and variety are key</div></div></div>
+            <div class="three-col">
+              <div><label>Feed posts this month</label><input type="number" id="mbr-socialPosts" placeholder="0" min="0"></div>
+              <div><label>Stories / Reels posted</label><input type="number" id="mbr-socialStories" placeholder="0" min="0"></div>
+              <div><label>Before & afters posted</label><input type="number" id="mbr-beforeAfters" placeholder="0" min="0"></div>
+            </div>
+            <div class="two-col">
+              <div><label>Posts featuring your face</label><input type="number" id="mbr-facePosts" placeholder="0" min="0"></div>
+              <div><label>Posts showing clinic life</label><input type="number" id="mbr-clinicPosts" placeholder="0" min="0"></div>
+            </div>
+            <div class="two-col">
+              <div><label>Average likes per post (approx.)</label><input type="number" id="mbr-avgLikes" placeholder="0" min="0"></div>
+              <div><label>Average comments per post (approx.)</label><input type="number" id="mbr-avgComments" placeholder="0" min="0"></div>
+            </div>
+            <label>Active DM outreach to potential clients</label>
+            <select id="mbr-dmOutreach">
+              <option value="">Select...</option>
+              <option value="Yes — 20+ messages sent">Yes — 20+ messages sent</option>
+              <option value="Yes — 10–20 messages sent">Yes — 10–20 messages sent</option>
+              <option value="Yes — a few (1–9)">Yes — a few (1–9)</option>
+              <option value="No active outreach">No active outreach</option>
+            </select>
+            <label>A notable comment or message you received this month (optional)</label>
+            <textarea id="mbr-notableComment" placeholder="Copy and paste a comment that made you smile..."></textarea>
+            <label>Is there any support you need regarding social media? (optional)</label>
+            <textarea id="mbr-socialSupport" placeholder="Content ideas, Reels help, scheduling..."></textarea>
+          </div>
+
+          <!-- 11: MINDSET -->
+          <div class="mbr-section">
+            <div class="section-header"><div class="section-num">11</div><div><div class="section-title">Mindset & Honest Reflection</div><div class="section-desc">Self-awareness is the foundation of all growth</div></div></div>
+            <label>How confident do you feel about your business right now? (1 = really struggling, 10 = absolutely flying)</label>
+            <div class="slider-wrap">
+              <div class="slider-labels"><span>1 — Really struggling</span><span>10 — Absolutely flying</span></div>
+              <input type="range" id="mbr-confidenceSlider" min="1" max="10" value="5" oninput="mbrUpdateSlider2(this)">
+              <div class="slider-val" id="mbr-confidenceVal">5 / 10</div>
+            </div>
+            <label>Rate your overall business development effort this month (1 = minimal, 10 = exceptional)</label>
+            <div class="slider-wrap">
+              <div class="slider-labels"><span>1 — Minimal</span><span>10 — Exceptional</span></div>
+              <input type="range" id="mbr-effortSlider" min="1" max="10" value="5" oninput="mbrUpdateSlider(this)">
+              <div class="slider-val" id="mbr-effortVal">5 / 10</div>
+            </div>
+            <label>Your biggest win or highlight this month</label>
+            <textarea id="mbr-bigWin" placeholder="Every win counts — share something, however small"></textarea>
+            <label>What got in the way this month? (optional)</label>
+            <textarea id="mbr-blocker" placeholder="Honest reflection leads to better results next month"></textarea>
+            <label>What one thing would make the biggest difference to your business next month?</label>
+            <textarea id="mbr-biggestChange" placeholder="Be specific — what is the single most impactful thing you could do?"></textarea>
+          </div>
+
+          <button class="submit-btn" id="mbrSubmitBtn" onclick="mbrSubmit()">
+            <span>🌿</span> Submit My Monthly Review
+          </button>
+          <div class="error-msg" id="mbrErrorMsg"></div>
+        </div>
+
+        <!-- MBR LOADING -->
+        <div class="loading-wrap" id="mbrLoadingWrap">
+          <div class="spinner"></div>
+          <div class="loading-text" id="mbrLoadingText">Preparing your personalised feedback...</div>
+          <div class="loading-sub" id="mbrLoadingSub">This takes about 15 seconds</div>
+        </div>
+
+        <!-- MBR RESULTS -->
+        <div class="results-wrap" id="mbrResultsWrap">
+          <div class="milestone-banner" id="mbrMilestoneBanner">
+            <div class="milestone-confetti" id="mbrMilestoneConfetti">🎉 🌟 🎉</div>
+            <div class="milestone-title" id="mbrMilestoneTitle"></div>
+            <div class="milestone-subtitle" id="mbrMilestoneSubtitle"></div>
+            <div class="milestone-badge" id="mbrMilestoneBadge"></div>
+          </div>
+          <div class="score-hero-card">
+            <div class="score-label">Your Monthly Seed Score</div>
+            <div class="score-number"><span id="mbrScoreNum">0</span><span>/100</span></div>
+            <div class="score-tier" id="mbrScoreTier"></div>
+            <div class="growth-bar-bg"><div class="growth-bar-fill" id="mbrGrowthBar"></div></div>
+            <div class="growth-stages">
+              <div class="growth-stage" id="mbrStage1">🌰<br>Dormant</div>
+              <div class="growth-stage" id="mbrStage2">🌱<br>Sprouting</div>
+              <div class="growth-stage" id="mbrStage3">🌿<br>Growing</div>
+              <div class="growth-stage" id="mbrStage4">🌳<br>Thriving</div>
+            </div>
+          </div>
+          <div class="metrics-row">
+            <div class="metric-card"><div class="metric-val" id="mbrMClients">0</div><div class="metric-name">Paying Clients</div></div>
+            <div class="metric-card"><div class="metric-val" id="mbrMActivities">0</div><div class="metric-name">BD Activities</div></div>
+            <div class="metric-card"><div class="metric-val" id="mbrMEffort">0</div><div class="metric-name">Effort Rating</div></div>
+          </div>
+          <div class="milestones-track">
+            <h3>Your Client Milestone Ladder</h3>
+            <div id="mbrMilestoneLadder"></div>
+          </div>
+          <div class="next-nudge" id="mbrNextNudge">
+            <div class="next-nudge-icon">🎯</div>
+            <div class="next-nudge-text" id="mbrNextNudgeText"></div>
+          </div>
+          <div class="feedback-card">
+            <h3>Your Personalised Feedback</h3>
+            <div class="feedback-body" id="mbrFeedbackBody"></div>
+          </div>
+          <div class="actions-card">
+            <h3>Your 3 Priority Actions for Next Month</h3>
+            <div id="mbrActionsList"></div>
+          </div>
+          <div class="sent-notice" id="mbrSentNotice"></div>
+          <button class="restart-btn" onclick="mbrRestart()">← Complete a new review</button>
+        </div>
+
+      </div><!-- /mbr-wrap -->
+    </div><!-- /panel-mbr -->
+  </main>
+</div><!-- /fx-app -->
+
+<script>
+/* ════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════ */
+const FORMSUBMIT_EMAIL = 'bethany@skinwithinaesthetics.co.uk';
+
+/* ════════════════════════════════════════
+   DATA
+════════════════════════════════════════ */
+const HO_CRED = { username: 'admin', password: 'seedscore2026' };
+const MONTHS  = ['Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026'];
+
+const franchisees = [
+  { name: 'Alice Morgan',   region: 'North',  username: 'alice.morgan',   password: 'alice2026',   history: [78,83,87,91,89,94] },
+  { name: 'Ben Okafor',     region: 'South',  username: 'ben.okafor',     password: 'ben2026',     history: [72,75,80,83,86,88] },
+  { name: 'Carla Diaz',     region: 'East',   username: 'carla.diaz',     password: 'carla2026',   history: [90,88,86,87,84,85] },
+  { name: 'David Patel',    region: 'West',   username: 'david.patel',    password: 'david2026',   history: [60,65,71,74,74,82] },
+  { name: 'Elena Russo',    region: 'North',  username: 'elena.russo',    password: 'elena2026',   history: [68,70,72,74,77,79] },
+  { name: 'Frank Yuen',     region: 'South',  username: 'frank.yuen',     password: 'frank2026',   history: [80,78,76,76,76,76] },
+  { name: 'Grace Kim',      region: 'East',   username: 'grace.kim',      password: 'grace2026',   history: [65,67,69,70,72,73] },
+  { name: 'Hassan Ali',     region: 'West',   username: 'hassan.ali',     password: 'hassan2026',  history: [82,80,78,76,73,71] },
+  { name: 'Imani Brooks',   region: 'North',  username: 'imani.brooks',   password: 'imani2026',   history: [55,58,60,63,65,68] },
+  { name: 'James Novak',    region: 'South',  username: 'james.novak',    password: 'james2026',   history: [80,75,72,69,67,65] },
+  { name: 'Keiko Tanaka',   region: 'East',   username: 'keiko.tanaka',   password: 'keiko2026',   history: [50,53,55,57,59,61] },
+  { name: 'Liam Brennan',   region: 'West',   username: 'liam.brennan',   password: 'liam2026',    history: [68,65,62,60,58,57] },
+  { name: 'Maya Singh',     region: 'North',  username: 'maya.singh',     password: 'maya2026',    history: [50,51,53,54,54,54] },
+  { name: 'Nathan Cruz',    region: 'South',  username: 'nathan.cruz',    password: 'nathan2026',  history: [68,63,60,55,52,49] },
+  { name: 'Olivia Park',    region: 'East',   username: 'olivia.park',    password: 'olivia2026',  history: [55,52,50,48,46,44] },
+  { name: 'Peter Walsh',    region: 'West',   username: 'peter.walsh',    password: 'peter2026',   history: [60,56,52,48,44,41] },
+  { name: 'Quinn Roberts',  region: 'North',  username: 'quinn.roberts',  password: 'quinn2026',   history: [30,32,34,35,36,38] },
+  { name: 'Rosa Fontaine',  region: 'South',  username: 'rosa.fontaine',  password: 'rosa2026',    history: [55,50,46,42,38,35] },
+  { name: 'Samuel Adeyemi', region: 'East',   username: 'samuel.adeyemi', password: 'samuel2026',  history: [35,34,33,32,31,31] },
+  { name: 'Tara Whitfield', region: 'West',   username: 'tara.whitfield', password: 'tara2026',    history: [45,42,38,35,30,27] },
+];
+
+franchisees.forEach(f => {
+  f.score     = f.history[f.history.length-1];
+  f.prevScore = f.history[f.history.length-2];
+  f.trendNum  = f.score - f.prevScore;
+  f.status    = f.score>=70?'Pass':f.score>=50?'Review':'Fail';
+});
+const sorted = [...franchisees].sort((a,b)=>b.score-a.score);
+sorted.forEach((f,i)=>{ f.rank=i+1; });
+
+/* ════════════════════════════════════════
+   MILESTONES
+════════════════════════════════════════ */
+const MILESTONES = [
+  { pts:10,  emoji:'🌱', title:'First Roots',       badge:'10 Clients/Month',  msg:'Ten paying clients in a month — the roots are forming. This is where every thriving franchise begins. You have proven the model works. Now keep watering.' },
+  { pts:20,  emoji:'🌿', title:'Finding Your Flow', badge:'20 Clients/Month',  msg:'Twenty paying clients a month is real momentum. You are building something consistent. Double down on whatever is bringing these clients through the door.' },
+  { pts:30,  emoji:'🌳', title:'Growing Season',    badge:'30 Clients/Month',  msg:'Thirty clients a month means word is spreading. This is the growing season — do not let up now.' },
+  { pts:40,  emoji:'⭐', title:'Forty & Thriving',  badge:'40 Clients/Month',  msg:'Forty paying clients a month is a landmark moment. You are now in the bracket where franchises truly start to scale. Celebrate this — you have earned it!' },
+  { pts:50,  emoji:'🚀', title:'Taking Flight',     badge:'50 Clients/Month',  msg:'Fifty clients a month puts you firmly in the top tier of the network. Your consistency is compounding. Keep going.' },
+  { pts:75,  emoji:'👑', title:'Elite Performer',   badge:'75 Clients/Month',  msg:'Seventy-five paying clients a month. You are an elite performer in this franchise network. Truly outstanding.' },
+  { pts:100, emoji:'💎', title:'Diamond Standard',  badge:'100 Clients/Month', msg:'One hundred clients a month. You are building a thriving, sustainable, growing business. You are the example for the whole network.' },
+];
+
+/* ════════════════════════════════════════
+   LOGIN
+════════════════════════════════════════ */
+let activeRole = 'ho';
+
+function switchTab(role) {
+  activeRole = role;
+  document.getElementById('tab-ho').classList.toggle('active', role==='ho');
+  document.getElementById('tab-fx').classList.toggle('active', role==='fx');
+  document.getElementById('login-error').style.display = 'none';
+  if (role==='ho') {
+    document.getElementById('login-title').textContent = 'Head Office sign in';
+    document.getElementById('login-desc').textContent  = 'Access the full network score dashboard.';
+    document.getElementById('login-hint').innerHTML    = 'Demo: <strong>admin</strong> / <strong>seedscore2026</strong>';
+  } else {
+    document.getElementById('login-title').textContent = 'Franchisee sign in';
+    document.getElementById('login-desc').textContent  = 'View your scores and complete your monthly review.';
+    document.getElementById('login-hint').innerHTML    =
+      'Example: <strong>alice.morgan</strong> / <strong>alice2026</strong><br>Format: firstname.lastname / firstname+year';
+  }
+}
+
+document.getElementById('login-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const u = document.getElementById('l-username').value.trim();
+  const p = document.getElementById('l-password').value;
+  if (activeRole==='ho') {
+    if (u===HO_CRED.username && p===HO_CRED.password) { showApp('ho'); initHODashboard(); }
+    else showLoginError();
+  } else {
+    const fx = franchisees.find(f=>f.username===u && f.password===p);
+    if (fx) { showApp('fx'); initFXDashboard(fx); }
+    else showLoginError();
+  }
+});
+
+function showLoginError() { document.getElementById('login-error').style.display='block'; }
+
+function showApp(role) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('ho-app').style.display = role==='ho'?'block':'none';
+  document.getElementById('fx-app').style.display = role==='fx'?'block':'none';
+}
+
+function logout() {
+  document.getElementById('ho-app').style.display = 'none';
+  document.getElementById('fx-app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('l-username').value = '';
+  document.getElementById('l-password').value = '';
+}
+
+/* ════════════════════════════════════════
+   PANEL SWITCHING (franchisee)
+════════════════════════════════════════ */
+function showPanel(panel) {
+  ['scores','mbr'].forEach(p => {
+    document.getElementById('panel-'+p).classList.toggle('active', p===panel);
+    document.getElementById('tab-'+p).classList.toggle('active', p===panel);
+  });
+}
+
+/* ════════════════════════════════════════
+   HEAD OFFICE DASHBOARD
+════════════════════════════════════════ */
+let hoSortCol='score', hoSortDir=-1;
+
+function initHODashboard() {
+  document.getElementById('ho-date').textContent = fmtDate(new Date());
+  const total=franchisees.length;
+  const avg  =Math.round(franchisees.reduce((s,f)=>s+f.score,0)/total);
+  const pass =franchisees.filter(f=>f.score>=70).length;
+  const fail =franchisees.filter(f=>f.score<50).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-avg').textContent   = avg;
+  document.getElementById('stat-pass').textContent  = pass;
+  document.getElementById('stat-fail').textContent  = fail;
+
+  const regions=[...new Set(franchisees.map(f=>f.region))].sort();
+  const sel=document.getElementById('ho-region');
+  sel.innerHTML='<option value="">All regions</option>';
+  regions.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+  renderHOTable();
+}
+
+function hoSort(col) {
+  if (hoSortCol===col) hoSortDir*=-1;
+  else { hoSortCol=col; hoSortDir=(col==='score'||col==='rank')?-1:1; }
+  renderHOTable();
+}
+
+function renderHOTable() {
+  const q     =document.getElementById('ho-search').value.toLowerCase();
+  const region=document.getElementById('ho-region').value;
+  const status=document.getElementById('ho-status').value;
+  let rows=franchisees.filter(f=>
+    (!q||f.name.toLowerCase().includes(q))&&
+    (!region||f.region===region)&&
+    (!status||f.status===status)
+  );
+  rows.sort((a,b)=>{
+    let va=hoSortCol==='trend'?a.trendNum:a[hoSortCol];
+    let vb=hoSortCol==='trend'?b.trendNum:b[hoSortCol];
+    if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}
+    return va<vb?hoSortDir:va>vb?-hoSortDir:0;
+  });
+  ['rank','name','region','score','trend','status'].forEach(c=>{
+    const el=document.getElementById('ha-'+c);
+    el.textContent=c===hoSortCol?(hoSortDir===-1?' ↓':' ↑'):'';
+    el.closest('th').classList.toggle('sorted',c===hoSortCol);
+  });
+  const tbody=document.getElementById('ho-tbody'); tbody.innerHTML='';
+  rows.forEach(f=>{
+    const color=scoreColor(f.score);
+    const rankClass=f.rank===1?'gold':f.rank===2?'silver':f.rank===3?'bronze':'';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="rank ${rankClass}">${f.rank}</span></td>
+      <td><span class="person-name">${f.name}</span></td>
+      <td><span style="color:var(--text-dim);font-size:13px;">${f.region}</span></td>
+      <td><div class="score-bar-wrap">
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${f.score}%;background:${color};"></div></div>
+        <span class="score-num" style="color:${color};">${f.score}</span>
+      </div></td>
+      <td><span class="trend ${f.trendNum>0?'up':f.trendNum<0?'down':'flat'}">${trendText(f.trendNum)}</span></td>
+      <td><span class="badge-status ${statusClass(f.status)}">${f.status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('ho-footer').textContent=`Showing ${rows.length} of ${franchisees.length} franchisees`;
+}
+
+/* ════════════════════════════════════════
+   FRANCHISEE DASHBOARD
+════════════════════════════════════════ */
+function initFXDashboard(fx) {
+  document.getElementById('fx-date').textContent        = fmtDate(new Date());
+  document.getElementById('fx-heading').textContent     = `${fx.name} — My Scores`;
+  document.getElementById('fx-topbar-sub').textContent  = fx.region+' Region';
+  document.getElementById('fx-username-label').textContent = fx.name;
+  document.getElementById('fx-avatar').textContent      = fx.name.split(' ').map(w=>w[0]).join('');
+
+  const latest=fx.history[fx.history.length-1];
+  const avg6  =Math.round(fx.history.reduce((s,v)=>s+v,0)/fx.history.length);
+  const color =scoreColor(latest);
+
+  document.getElementById('fx-latest').textContent      = latest;
+  document.getElementById('fx-latest').style.color      = color;
+  document.getElementById('fx-latest-month').textContent= MONTHS[MONTHS.length-1];
+  document.getElementById('fx-avg').textContent         = avg6;
+  document.getElementById('fx-rank').textContent        = `#${fx.rank}`;
+  document.getElementById('fx-rank-sub').textContent    = `of ${franchisees.length} franchisees`;
+
+  const statusCls=statusClass(fx.status);
+  document.getElementById('fx-status-badge').innerHTML=
+    `<span class="badge-status ${statusCls}" style="font-size:13px;padding:4px 14px;">${fx.status}</span>`;
+  document.getElementById('fx-status-sub').textContent=
+    fx.status==='Pass'?'Score ≥ 70 — well done!':
+    fx.status==='Review'?'Score 50–69 — keep improving':'Score < 50 — action required';
+
+  const sc=document.getElementById('fx-status-card');
+  if(fx.status==='Pass')sc.classList.add('card-green');
+  else if(fx.status==='Review')sc.classList.add('card-yellow');
+  else sc.classList.add('card-red');
+
+  drawChart(fx.history);
+  document.getElementById('fx-chart-labels').innerHTML=MONTHS.map(m=>`<span>${m}</span>`).join('');
+
+  const tbody=document.getElementById('fx-history-tbody'); tbody.innerHTML='';
+  for(let i=fx.history.length-1;i>=0;i--){
+    const score=fx.history[i], prev=i>0?fx.history[i-1]:null;
+    const delta=prev!==null?score-prev:null;
+    const status=score>=70?'Pass':score>=50?'Review':'Fail';
+    const col=scoreColor(score);
+    const deltaTxt=delta===null?'—':trendText(delta);
+    const deltaCls=delta===null?'flat':delta>0?'up':delta<0?'down':'flat';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${MONTHS[i]}</td>
+      <td><div class="score-bar-wrap">
+        <div class="score-bar-bg" style="min-width:100px;"><div class="score-bar-fill" style="width:${score}%;background:${col};"></div></div>
+        <span class="score-num" style="color:${col};">${score}</span>
+      </div></td>
+      <td><span class="trend ${deltaCls}">${deltaTxt}</span></td>
+      <td><span class="badge-status ${statusClass(status)}">${status}</span></td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Pre-fill MBR name/location
+  document.getElementById('mbr-name').value     = fx.name;
+  document.getElementById('mbr-location').value = fx.region+' Region';
+}
+
+function drawChart(history) {
+  const svg=document.getElementById('fx-chart');
+  const W=600,H=180,padX=24,padY=16;
+  const minV=Math.max(0,Math.min(...history)-10);
+  const maxV=Math.min(100,Math.max(...history)+10);
+  const toX=i=>padX+i*((W-padX*2)/(history.length-1));
+  const toY=v=>H-padY-((v-minV)/(maxV-minV))*(H-padY*2);
+
+  let lines='';
+  [0,25,50,75,100].forEach(v=>{
+    if(v<minV||v>maxV)return;
+    const y=toY(v);
+    lines+=`<line x1="${padX}" y1="${y}" x2="${W-padX}" y2="${y}" stroke="rgba(200,156,149,0.2)" stroke-width="1"/>
+            <text x="${padX-5}" y="${y+4}" text-anchor="end" fill="#9a7e7a" font-size="10" font-family="Jost,sans-serif">${v}</text>`;
+  });
+
+  const linePath='M '+history.map((v,i)=>`${toX(i)} ${toY(v)}`).join(' L ');
+  const firstX=toX(0),lastX=toX(history.length-1),baseY=toY(minV);
+
+  let dots='';
+  history.forEach((v,i)=>{
+    const col=scoreColor(v);
+    dots+=`<circle cx="${toX(i)}" cy="${toY(v)}" r="4.5" fill="${col}" stroke="white" stroke-width="2"/><title>${MONTHS[i]}: ${v}</title>`;
+  });
+
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#c89c95" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#c89c95" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${lines}
+    <path d="M${firstX},${baseY} ${history.map((v,i)=>`L${toX(i)},${toY(v)}`).join('')} L${lastX},${baseY}Z" fill="url(#areaGrad)"/>
+    <path d="${linePath}" fill="none" stroke="#c89c95" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}`;
+}
+
+/* ════════════════════════════════════════
+   MBR FORM HELPERS
+════════════════════════════════════════ */
+const now=new Date();
+const mbrY=now.getFullYear(), mbrMo=String(now.getMonth()+1).padStart(2,'0');
+document.getElementById('mbr-reviewMonth').value=`${mbrY}-${mbrMo}`;
+document.getElementById('mbrMonthTag').textContent=
+  `Review for ${now.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}`;
+
+document.querySelectorAll('.check-item').forEach(item=>{
+  item.addEventListener('click',function(){ this.classList.toggle('checked'); });
+});
+
+function mbrToggle(id,show){ document.getElementById(id).classList.toggle('show',show); }
+
+function mbrUpdateSlider(el){
+  el.style.setProperty('--val',(el.value/10*100)+'%');
+  document.getElementById('mbr-effortVal').textContent=el.value+' / 10';
+}
+function mbrUpdateSlider2(el){
+  el.style.setProperty('--val',(el.value/10*100)+'%');
+  document.getElementById('mbr-confidenceVal').textContent=el.value+' / 10';
+}
+mbrUpdateSlider(document.getElementById('mbr-effortSlider'));
+mbrUpdateSlider2(document.getElementById('mbr-confidenceSlider'));
+
+function mbrGv(id){ return document.getElementById(id)?.value?.trim()||''; }
+function mbrGi(id){ return parseInt(document.getElementById(id)?.value)||0; }
+function mbrGetChecked(id){
+  return Array.from(document.querySelectorAll(`#${id} .check-item.checked`)).map(el=>el.dataset.value);
+}
+
+/* ════════════════════════════════════════
+   MBR SCORING
+════════════════════════════════════════ */
+function mbrCalcScore(d){
+  let s=0;
+  s+=Math.min(d.paying*0.8,20); s+=Math.min(d.newClients*1.2,10);
+  s+=Math.min(d.skinade*1.5,5); s+=Math.min(d.alumier*1.5,5);
+  s+=Math.min(d.contacts,5);    s+=Math.min(d.leaflets/20,4);
+  s+=Math.min(d.followUp*0.8,4);s+=Math.min(d.googleNew*2,6);
+  s+=d.networking.length>=4?8:Math.min(d.networking.length*2,8);
+  s+=d.modelDay==='Yes'?5:0;    s+=d.heldEvent==='Yes'?6:0;
+  s+=d.nextEventPlan.length>30?3:0;
+  s+=Math.min(d.socialPosts*0.5,4);s+=Math.min(d.beforeAfters,3);
+  s+=Math.min(d.facePosts*0.8,3);  s+=d.socialClubs==='Yes'?4:0;
+  s+=d.wasCommunity==='Yes'?3:0;
+  s+=d.waWeeklyPost==='Yes — every week'?3:d.waWeeklyPost==='Most weeks'?1:0;
+  s+=d.emailWeekly==='Yes — every week'?3:d.emailWeekly==='Most weeks'?1:0;
+  if(d.dm.includes('20+'))s+=4; else if(d.dm.includes('10–20'))s+=3; else if(d.dm.includes('few'))s+=1;
+  if(d.referral.includes('multiple'))s+=5; else if(d.referral.includes('one'))s+=2;
+  s+=d.effort;
+  return Math.min(Math.round(s),100);
+}
+function mbrGetTier(s){
+  if(s<25)return{label:'🌰 Dormant Seed',cls:'tier-dormant',stage:1};
+  if(s<50)return{label:'🌱 Sprouting',cls:'tier-sprouting',stage:2};
+  if(s<75)return{label:'🌿 Actively Growing',cls:'tier-growing',stage:3};
+  return       {label:'🌳 Thriving Franchise',cls:'tier-thriving',stage:4};
+}
+function getMilestoneFor(pts){ return [...MILESTONES].sort((a,b)=>b.pts-a.pts).find(m=>pts>=m.pts)||null; }
+function getNextMilestoneFor(pts){ return MILESTONES.find(m=>m.pts>pts)||null; }
+
+function buildMbrLadder(pts){
+  const el=document.getElementById('mbrMilestoneLadder'); el.innerHTML='';
+  const nextM=getNextMilestoneFor(pts);
+  MILESTONES.forEach(m=>{
+    const achieved=pts>=m.pts, isNext=nextM&&nextM.pts===m.pts;
+    const row=document.createElement('div'); row.className='milestone-row';
+    row.innerHTML=`<div class="m-dot ${achieved?'achieved':''} ${isNext?'next-up':''}">
+      ${achieved?m.emoji:(isNext?'🎯':'<span style="font-size:0.55rem;color:var(--border)">●</span>')}
+    </div>
+    <div class="m-info">
+      <div class="m-name">${m.emoji} ${m.title} <span style="color:var(--text-dim);font-size:0.72rem">— ${m.pts} clients/month</span></div>
+      <div class="m-sub">${achieved?'✅ Achieved':(isNext?`🎯 Next target — ${m.pts-pts} client${m.pts-pts===1?'':'s'} away`:`${m.pts-pts} clients away`)}</div>
+    </div>
+    ${achieved?'<div class="m-check">✓</div>':''}`;
+    el.appendChild(row);
+  });
+}
+
+/* ════════════════════════════════════════
+   MBR FORMSUBMIT
+════════════════════════════════════════ */
+async function sendMbrEmail(d, score, tier, feedback, actions) {
+  try {
+    const monthLabel=new Date(d.reviewMonth+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    const body=[
+      `SKIN WITHIN AESTHETICS — MONTHLY BUSINESS REVIEW`,
+      `══════════════════════════════════════════`,
+      `Franchisee: ${d.name}  |  Location: ${d.location}  |  Month: ${monthLabel}`,
+      `Submitted: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`,
+      ``,`SEED SCORE: ${score}/100  |  STATUS: ${tier.label}`,``,
+      `── CLIENTS ──`,
+      `Total paying: ${d.paying}  |  New: ${d.newClients}  |  Returning: ${d.returningClients}  |  No-shows: ${d.noShows}`,
+      `Skinade: ${d.skinade}  |  Alumier: ${d.alumier}  |  Discounts: ${d.discounts}`,
+      ``,`── TREATMENTS ──`,
+      `This month: ${d.treatments.join(', ')||'Not specified'}`,
+      `Top: ${d.topTreatment||'Not specified'}`,
+      ``,`── OUTREACH ──`,
+      `Contacts added: ${d.contacts}  |  Follow-ups: ${d.followUp}  |  Leaflets: ${d.leaflets}`,
+      `Google reviews: ${d.googleTotal} total, ${d.googleNew} new, rating: ${d.googleRating}`,
+      ``,`── ACTIVITY ──`,
+      `Model day: ${d.modelDay}  |  Event held: ${d.heldEvent}`,
+      `Networking: ${d.networking.join('; ')||'None'}`,
+      `WA community: ${d.wasCommunity}  |  Email: ${d.emailWeekly}`,
+      `Social: ${d.socialPosts} posts, ${d.beforeAfters} before/afters, ${d.facePosts} face posts`,
+      `DM outreach: ${d.dm}`,
+      ``,`── MINDSET ──`,
+      `Confidence: ${d.confidence}/10  |  Effort: ${d.effort}/10`,
+      d.win?`Win: ${d.win}`:'',
+      ``,`── AI FEEDBACK ──`,feedback,
+      ``,`── PRIORITY ACTIONS ──`,
+      ...actions.map((a,i)=>`${i+1}. ${a}`),
+    ].filter(l=>l!=='').join('\n');
+
+    const fd=new FormData();
+    fd.append('_subject', `MBR — ${d.name} — ${monthLabel} — Score: ${score}/100`);
+    fd.append('_template','box');
+    fd.append('_replyto', d.email||'');
+    fd.append('_cc',      d.email||'');
+    fd.append('Franchisee',d.name);
+    fd.append('Location',  d.location);
+    fd.append('Month',     monthLabel);
+    fd.append('Score',     `${score}/100 — ${tier.label}`);
+    fd.append('Full_Review',body);
+
+    const res=await fetch(`https://formsubmit.co/${FORMSUBMIT_EMAIL}`,{method:'POST',body:fd});
+    return res.ok;
+  } catch(e){ console.warn('Email error:',e); return false; }
+}
+
+/* ════════════════════════════════════════
+   MBR SUBMIT
+════════════════════════════════════════ */
+async function mbrSubmit() {
+  const name=mbrGv('mbr-name'),location=mbrGv('mbr-location'),reviewMonth=mbrGv('mbr-reviewMonth');
+  const errEl=document.getElementById('mbrErrorMsg');
+  if(!name||!location||!reviewMonth){
+    errEl.textContent='Please enter your full name, clinic location, and the month this review covers.';
+    errEl.classList.add('show'); return;
+  }
+  errEl.classList.remove('show');
+
+  const d={
+    name,location,reviewMonth,email:mbrGv('mbr-email'),
+    paying:mbrGi('mbr-payingClients'),newClients:mbrGi('mbr-newClients'),
+    returningClients:mbrGi('mbr-returningClients'),noShows:mbrGi('mbr-noShows'),
+    skinade:mbrGi('mbr-skinade'),alumier:mbrGi('mbr-alumier'),
+    discounts:mbrGi('mbr-discounts'),discountDetail:mbrGv('mbr-discountDetail'),
+    treatments:mbrGetChecked('mbr-treatmentChecks'),topTreatment:mbrGv('mbr-topTreatment'),
+    underusedTreatment:mbrGv('mbr-underusedTreatment'),
+    contacts:mbrGi('mbr-dbContacts'),followUp:mbrGi('mbr-followUp'),
+    leaflets:mbrGi('mbr-leaflets'),bizCards:mbrGi('mbr-bizCards'),referral:mbrGv('mbr-referralAsk'),
+    googleTotal:mbrGi('mbr-googleTotal'),googleNew:mbrGi('mbr-googleNew'),
+    googleRating:mbrGv('mbr-googleRating'),negativeReview:mbrGv('mbr-negativeReview'),
+    modelDay:mbrGv('mbr-modelDay'),modelDayAttendees:mbrGi('mbr-modelDayAttendees'),
+    modelDayRebooked:mbrGi('mbr-modelDayRebooked'),modelDayAds:mbrGetChecked('mbr-modelDayAds'),
+    modelConvert:mbrGv('mbr-modelConvert'),
+    heldEvent:mbrGv('mbr-heldEvent'),lastEventDate:mbrGv('mbr-lastEventDate'),
+    lastEventVenue:mbrGv('mbr-lastEventVenue'),lastEventOffers:mbrGv('mbr-lastEventOffers'),
+    lastEventAttendees:mbrGi('mbr-lastEventAttendees'),lastEventLeads:mbrGi('mbr-lastEventLeads'),
+    nextEventDate:mbrGv('mbr-nextEventDate'),nextEventPlan:mbrGv('mbr-nextEventPlan'),
+    nextEventOffers:mbrGv('mbr-nextEventOffers'),
+    networking:mbrGetChecked('mbr-networkingChecks'),
+    socialClubs:mbrGv('mbr-socialClubs'),clubNames:mbrGv('mbr-clubNames'),clubBookings:mbrGv('mbr-clubBookings'),
+    totalEvents:mbrGi('mbr-totalEvents'),nextEvents:mbrGv('mbr-nextEvents'),
+    wasCommunity:mbrGv('mbr-wasCommunity'),waCommunityCount:mbrGi('mbr-waCommunityCount'),
+    waWeeklyPost:mbrGv('mbr-waWeeklyPost'),waContent:mbrGv('mbr-waContent'),
+    wasModel:mbrGv('mbr-wasModel'),waModelCount:mbrGi('mbr-waModelCount'),
+    emailWeekly:mbrGv('mbr-emailWeekly'),emailContent:mbrGv('mbr-emailContent'),
+    socialPosts:mbrGi('mbr-socialPosts'),socialStories:mbrGi('mbr-socialStories'),
+    beforeAfters:mbrGi('mbr-beforeAfters'),facePosts:mbrGi('mbr-facePosts'),clinicPosts:mbrGi('mbr-clinicPosts'),
+    avgLikes:mbrGi('mbr-avgLikes'),avgComments:mbrGi('mbr-avgComments'),
+    dm:mbrGv('mbr-dmOutreach'),notableComment:mbrGv('mbr-notableComment'),socialSupport:mbrGv('mbr-socialSupport'),
+    confidence:parseInt(document.getElementById('mbr-confidenceSlider').value),
+    effort:parseInt(document.getElementById('mbr-effortSlider').value),
+    win:mbrGv('mbr-bigWin'),blocker:mbrGv('mbr-blocker'),biggestChange:mbrGv('mbr-biggestChange'),
+  };
+
+  const score=mbrCalcScore(d),tier=mbrGetTier(score);
+  const milestone=getMilestoneFor(d.paying),nextM=getNextMilestoneFor(d.paying);
+
+  document.getElementById('mbrSubmitBtn').disabled=true;
+  document.getElementById('mbrFormWrap').style.display='none';
+  document.getElementById('mbrLoadingWrap').classList.add('active');
+
+  try {
+    const monthLabel=new Date(d.reviewMonth+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+
+    const feedbackPrompt=`You are a warm but direct business support manager at Skin Within Aesthetics, writing a personalised monthly feedback report for a franchisee.
+
+Do NOT mention AI or coaching. Write as if this is a personal message from head office. Sign off as "The Skin Within Team".
+
+FRANCHISEE: ${d.name} — ${d.location}
+MONTH: ${monthLabel}
+CONFIDENCE RATING: ${d.confidence}/10
+PAYING CLIENTS: ${d.paying} total (${d.newClients} new, ${d.returningClients} returning)
+NO-SHOWS: ${d.noShows}
+SKINADE APPOINTMENTS: ${d.skinade}
+ALUMIER PRODUCTS SOLD: ${d.alumier}
+DISCOUNTS GIVEN: ${d.discounts}${d.discountDetail?' — '+d.discountDetail:''}
+TREATMENTS THIS MONTH: ${d.treatments.join(', ')||'Not specified'}
+TOP TREATMENT: ${d.topTreatment||'Not specified'}
+DATABASE CONTACTS ADDED: ${d.contacts} | FOLLOW-UPS: ${d.followUp} | LEAFLETS: ${d.leaflets}
+REFERRAL ASKS: ${d.referral}
+GOOGLE REVIEWS: ${d.googleTotal} total, ${d.googleNew} new this month, rating: ${d.googleRating}
+MODEL DAY: ${d.modelDay}${d.modelDay==='Yes'?` — ${d.modelDayAttendees} models seen, ${d.modelDayRebooked} rebooked, conversions: ${d.modelConvert}`:''}
+EVENT HELD: ${d.heldEvent}${d.heldEvent==='Yes'?` at ${d.lastEventVenue}, ${d.lastEventAttendees} attended, ${d.lastEventLeads} leads`:''}
+NEXT EVENT: ${d.nextEventDate} — ${d.nextEventPlan||'No plan yet'}
+NETWORKING: ${d.networking.length?d.networking.join('; '):'None'}
+SOCIAL CLUBS: ${d.socialClubs}${d.socialClubs==='Yes'?' — '+d.clubNames:''}
+WHATSAPP COMMUNITY: ${d.wasCommunity}${d.wasCommunity==='Yes'?` — ${d.waCommunityCount} members, weekly posts: ${d.waWeeklyPost}`:''}
+EMAIL LIST: ${d.emailWeekly}
+SOCIAL: ${d.socialPosts} posts, ${d.socialStories} stories/reels, ${d.beforeAfters} before/afters, ${d.facePosts} face posts, avg ${d.avgLikes} likes
+DM OUTREACH: ${d.dm}
+EFFORT RATING: ${d.effort}/10
+BIGGEST WIN: ${d.win||'Not shared'}
+BLOCKERS: ${d.blocker||'None'}
+BIGGEST CHANGE NEEDED: ${d.biggestChange||'Not answered'}
+SEED SCORE: ${score}/100 (${tier.label})
+${milestone?'MILESTONE ACHIEVED: '+milestone.title:'NEXT MILESTONE: '+(nextM?nextM.pts+' clients/month ('+nextM.title+')':'All milestones achieved')}
+
+Write 6 paragraphs. Plain text only — no markdown, no asterisks, no bullet points.
+P1 — Welcome & recognition. Use first name. If confidence 1–4, acknowledge gently first. Celebrate any milestone.
+P2 — Client numbers, treatment mix, retail (Skinade/Alumier).
+P3 — WhatsApp, email consistency, Google reviews.
+P4 — Networking, model day, events, in-person activity.
+P5 — Single most important challenge for next month. Direct but kind. Use a plant/growth metaphor.
+P6 — Warm close. Reference next milestone. Sign off as "The Skin Within Team".
+Total: 340–400 words.`;
+
+    const actionsPrompt=`You are writing on behalf of Skin Within Aesthetics head office. Give exactly 3 specific, concrete priority actions for ${d.name} next month.
+Clients: ${d.paying} | Networking: ${d.networking.length} | Model day: ${d.modelDay} | Skinade: ${d.skinade} | Alumier: ${d.alumier} | Google reviews: ${d.googleNew} new | WA community: ${d.wasCommunity} | Email: ${d.emailWeekly} | Confidence: ${d.confidence}/10 | Next milestone: ${nextM?nextM.pts+' clients ('+nextM.title+')':'all achieved'}.
+Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Each string: 1–2 sentences, starts with a strong action verb. Do not mention AI.`;
+
+    const [feedRes,actRes]=await Promise.all([
+      fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,messages:[{role:"user",content:feedbackPrompt}]})}),
+      fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:actionsPrompt}]})})
+    ]);
+
+    const feedData=await feedRes.json(),actData=await actRes.json();
+    const feedback=feedData.content?.map(b=>b.text||'').join('\n').trim()||'Unable to generate feedback at this time.';
+
+    let actions=[
+      "Organise a model day this month and promote it across your WhatsApp groups, Instagram, and your email database at least two weeks in advance.",
+      "Ask every single client this month for a Google review — set a target of at least 5 new reviews before your next Monthly Business Review.",
+      "Send a weekly email or WhatsApp message to your patient community every Monday morning — keep it short, warm, and include a treatment highlight or limited offer."
+    ];
+    try {
+      const raw=actData.content?.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+      const parsed=JSON.parse(raw);
+      if(Array.isArray(parsed)&&parsed.length===3)actions=parsed;
+    } catch(e){ console.warn('Action parse failed'); }
+
+    document.getElementById('mbrLoadingText').textContent='Sending your results to head office...';
+    document.getElementById('mbrLoadingSub').textContent='Almost done';
+    const emailSent=await sendMbrEmail(d,score,tier,feedback,actions);
+
+    document.getElementById('mbrLoadingWrap').classList.remove('active');
+    renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent);
+
+  } catch(err) {
+    console.error('MBR submit error:',err);
+    document.getElementById('mbrLoadingWrap').classList.remove('active');
+    document.getElementById('mbrFormWrap').style.display='block';
+    document.getElementById('mbrSubmitBtn').disabled=false;
+    errEl.textContent='Connection error — please check your internet and try again.';
+    errEl.classList.add('show');
+  }
+}
+
+/* ════════════════════════════════════════
+   MBR RENDER RESULTS
+════════════════════════════════════════ */
+function renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent){
+  if(milestone){
+    document.getElementById('mbrMilestoneConfetti').textContent=`${milestone.emoji} 🎉 ${milestone.emoji}`;
+    document.getElementById('mbrMilestoneTitle').textContent=`Milestone Unlocked: ${milestone.title}!`;
+    document.getElementById('mbrMilestoneSubtitle').textContent=milestone.msg;
+    document.getElementById('mbrMilestoneBadge').textContent=`🏅 ${milestone.badge}`;
+    document.getElementById('mbrMilestoneBanner').classList.add('show');
+  }
+  document.getElementById('mbrScoreNum').textContent=score;
+  const te=document.getElementById('mbrScoreTier');
+  te.textContent=tier.label; te.className=`score-tier ${tier.cls}`;
+  setTimeout(()=>{ document.getElementById('mbrGrowthBar').style.width=score+'%'; },150);
+  for(let i=1;i<=4;i++) document.getElementById(`mbrStage${i}`).classList.toggle('active',tier.stage===i);
+  document.getElementById('mbrMClients').textContent=d.paying;
+  document.getElementById('mbrMActivities').textContent=
+    d.networking.length+(d.modelDay==='Yes'?1:0)+(d.heldEvent==='Yes'?1:0)+(d.leaflets>0?1:0);
+  document.getElementById('mbrMEffort').textContent=d.effort+'/10';
+  buildMbrLadder(d.paying);
+  if(nextM){
+    const gap=nextM.pts-d.paying;
+    document.getElementById('mbrNextNudgeText').innerHTML=
+      `<strong>You are ${gap} client${gap===1?'':'s'} away from ${nextM.emoji} ${nextM.title} (${nextM.pts} clients/month).</strong><br>Every leaflet, every event, every conversation gets you one step closer.`;
+    document.getElementById('mbrNextNudge').style.display='flex';
+  }
+  document.getElementById('mbrFeedbackBody').textContent=feedback;
+  const list=document.getElementById('mbrActionsList'); list.innerHTML='';
+  actions.forEach((a,i)=>{
+    const div=document.createElement('div'); div.className='action-item';
+    div.innerHTML=`<div class="action-num">${i+1}</div><div>${a}</div>`;
+    list.appendChild(div);
+  });
+  const notice=document.getElementById('mbrSentNotice');
+  if(emailSent){
+    notice.className='sent-notice ok';
+    notice.innerHTML=`✅ <strong>Your review has been submitted to head office.</strong>${d.email?' A copy has been sent to '+d.email+' too.':''}`;
+  } else {
+    notice.className='sent-notice warn';
+    notice.innerHTML=`⚠️ Results generated successfully. Please screenshot your feedback — the email notification could not be sent automatically this time.`;
+  }
+  document.getElementById('mbrResultsWrap').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function mbrRestart(){
+  document.getElementById('mbrResultsWrap').classList.remove('active');
+  document.getElementById('mbrMilestoneBanner').classList.remove('show');
+  document.getElementById('mbrNextNudge').style.display='none';
+  document.getElementById('mbrGrowthBar').style.width='0%';
+  document.getElementById('mbrSubmitBtn').disabled=false;
+  document.getElementById('mbrFormWrap').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ════════════════════════════════════════
+   SHARED HELPERS
+════════════════════════════════════════ */
+function scoreColor(s){ return s>=70?'#4a7c59':s>=50?'#c4972a':'#3D0000'; }
+function statusClass(s){ return s==='Pass'?'badge-pass':s==='Review'?'badge-review':'badge-fail'; }
+function trendText(n){ if(n===0)return'—'; return(n>0?'▲ ':'▼ ')+Math.abs(n); }
+function fmtDate(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }
+</script>
+</body>
+</html>

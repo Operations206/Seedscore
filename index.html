@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seedscore — Head Office Dashboard</title>
+  <title>Seedscore</title>
   <style>
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,19 +46,19 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 40px 48px;
+      padding: 36px 44px 40px;
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
     }
 
     .login-logo {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
-    .login-logo .logo-icon {
+    .logo-icon {
       width: 40px;
       height: 40px;
       background: var(--accent);
@@ -72,41 +72,48 @@
       flex-shrink: 0;
     }
 
-    .login-logo h1 {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
+    .login-logo h1 { font-size: 22px; font-weight: 700; }
+    .login-logo span { font-size: 12px; color: var(--muted); display: block; }
+
+    /* Role tabs */
+    .role-tabs {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-bottom: 24px;
     }
 
-    .login-logo span {
-      font-size: 12px;
-      color: var(--muted);
-      display: block;
-      font-weight: 400;
-    }
-
-    .login-card h2 {
-      font-size: 18px;
+    .role-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .login-card p {
-      font-size: 14px;
       color: var(--muted);
-      margin-bottom: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
     }
 
-    .field {
-      margin-bottom: 16px;
+    .role-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 4px #0004;
     }
+
+    .login-card h2 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .login-card > p { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+
+    .field { margin-bottom: 14px; }
 
     .field label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .field input {
@@ -134,7 +141,7 @@
       color: #fff;
       cursor: pointer;
       transition: background 0.15s;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .btn-primary:hover { background: var(--accent-dk); }
@@ -143,28 +150,29 @@
       background: #3b1212;
       border: 1px solid var(--red);
       border-radius: var(--radius);
-      padding: 10px 14px;
+      padding: 9px 13px;
       font-size: 13px;
       color: #fca5a5;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: none;
     }
 
     .login-hint {
-      margin-top: 20px;
-      padding-top: 20px;
+      margin-top: 18px;
+      padding-top: 18px;
       border-top: 1px solid var(--border);
       font-size: 12px;
       color: var(--muted);
-      text-align: center;
+      line-height: 1.7;
     }
 
-    /* ══════════════════════════════════════
-       APP SHELL (hidden until logged in)
-    ══════════════════════════════════════ */
-    #app { display: none; }
+    .login-hint strong { color: var(--text); }
 
-    /* ── Top bar ── */
+    /* ══════════════════════════════════════
+       SHARED APP SHELL
+    ══════════════════════════════════════ */
+    #ho-app, #fx-app { display: none; }
+
     .topbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -178,45 +186,22 @@
       z-index: 10;
     }
 
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
 
     .topbar-logo {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       background: var(--accent);
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 16px;
-      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; color: #fff;
     }
 
-    .topbar-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .topbar-subtitle {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .topbar-title { font-size: 16px; font-weight: 700; }
+    .topbar-subtitle { font-size: 12px; color: var(--muted); }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
 
     .user-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -225,16 +210,11 @@
     }
 
     .user-avatar {
-      width: 24px;
-      height: 24px;
+      width: 24px; height: 24px;
       border-radius: 50%;
       background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
     }
 
     .btn-logout {
@@ -250,32 +230,20 @@
 
     .btn-logout:hover { color: var(--text); border-color: var(--muted); }
 
-    /* ── Main content ── */
     .content {
       max-width: 1200px;
       margin: 32px auto;
       padding: 0 28px;
     }
 
-    .page-heading {
-      margin-bottom: 28px;
-    }
+    .page-heading { margin-bottom: 28px; }
+    .page-heading h2 { font-size: 22px; font-weight: 700; }
+    .page-heading p { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
-    .page-heading h2 {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .page-heading p {
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* ── Summary cards ── */
+    /* ── Cards ── */
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 16px;
       margin-bottom: 32px;
     }
@@ -288,70 +256,47 @@
     }
 
     .card-label {
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 11px; font-weight: 600;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: uppercase; letter-spacing: 0.06em;
       margin-bottom: 8px;
     }
 
-    .card-value {
-      font-size: 30px;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .card-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
+    .card-value { font-size: 30px; font-weight: 700; line-height: 1; }
+    .card-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
     .card-accent { border-left: 3px solid var(--accent); }
     .card-green  { border-left: 3px solid var(--green); }
     .card-yellow { border-left: 3px solid var(--yellow); }
     .card-red    { border-left: 3px solid var(--red); }
 
-    /* ── Scores table ── */
+    /* ── Table card ── */
     .table-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
+      margin-bottom: 32px;
     }
 
     .table-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--border);
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 12px; flex-wrap: wrap;
     }
 
-    .table-toolbar h3 {
-      font-size: 15px;
-      font-weight: 600;
-    }
+    .table-toolbar h3 { font-size: 15px; font-weight: 600; }
 
-    .toolbar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .toolbar-right { display: flex; align-items: center; gap: 10px; }
 
     .search-input {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 7px 12px;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-      width: 220px;
+      font-size: 13px; color: var(--text);
+      outline: none; width: 220px;
       transition: border-color 0.15s;
     }
 
@@ -362,136 +307,145 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 7px 12px;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-      cursor: pointer;
+      font-size: 13px; color: var(--text);
+      outline: none; cursor: pointer;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
 
     thead th {
       text-align: left;
-      padding: 12px 20px;
-      font-size: 12px;
-      font-weight: 600;
+      padding: 11px 20px;
+      font-size: 11px; font-weight: 600;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      text-transform: uppercase; letter-spacing: 0.05em;
       border-bottom: 1px solid var(--border);
       white-space: nowrap;
-      cursor: pointer;
-      user-select: none;
+      cursor: pointer; user-select: none;
     }
 
     thead th:hover { color: var(--text); }
-
     thead th.sorted { color: var(--accent); }
-
     thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
     thead th.sorted .sort-arrow { opacity: 1; }
 
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background 0.1s;
-    }
-
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: var(--surface2); }
 
-    td { padding: 13px 20px; vertical-align: middle; }
+    td { padding: 12px 20px; vertical-align: middle; }
 
-    .rank {
-      font-weight: 700;
-      color: var(--muted);
-      font-size: 13px;
-      width: 32px;
-    }
-
+    .rank { font-weight: 700; color: var(--muted); font-size: 13px; }
     .rank.gold   { color: #f59e0b; }
     .rank.silver { color: #94a3b8; }
     .rank.bronze { color: #cd7c46; }
 
-    .person-name {
-      font-weight: 600;
-      color: var(--text);
-    }
+    .person-name { font-weight: 600; }
 
-    .person-dept {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .score-bar-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
 
     .score-bar-bg {
-      flex: 1;
-      height: 6px;
+      flex: 1; height: 6px;
       background: var(--surface2);
-      border-radius: 99px;
-      overflow: hidden;
+      border-radius: 99px; overflow: hidden;
       min-width: 80px;
     }
 
-    .score-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.4s ease;
-    }
+    .score-bar-fill { height: 100%; border-radius: 99px; }
 
-    .score-num {
-      font-weight: 700;
-      font-size: 15px;
-      min-width: 36px;
-      text-align: right;
-    }
+    .score-num { font-weight: 700; font-size: 15px; min-width: 36px; text-align: right; }
 
     .badge-status {
       display: inline-block;
       padding: 2px 10px;
       border-radius: 99px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
     }
 
     .badge-pass    { background: #14532d; color: #86efac; }
     .badge-review  { background: #713f12; color: #fde68a; }
     .badge-fail    { background: #450a0a; color: #fca5a5; }
 
-    .trend {
-      font-size: 13px;
-      font-weight: 600;
-    }
-
+    .trend { font-size: 13px; font-weight: 600; }
     .trend.up   { color: var(--green); }
     .trend.down { color: var(--red); }
     .trend.flat { color: var(--muted); }
 
     .table-footer {
-      padding: 12px 20px;
+      padding: 11px 20px;
       border-top: 1px solid var(--border);
-      font-size: 13px;
+      font-size: 13px; color: var(--muted);
+    }
+
+    /* ══════════════════════════════════════
+       FRANCHISEE DASHBOARD
+    ══════════════════════════════════════ */
+
+    /* Score chart */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card h3 {
+      font-size: 15px; font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .chart-wrap svg {
+      width: 100%;
+      height: 180px;
+      overflow: visible;
+    }
+
+    .chart-x-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0 0 0;
+      font-size: 11px;
       color: var(--muted);
+    }
+
+    /* History table (smaller) */
+    .history-table td,
+    .history-table th { padding: 10px 16px; }
+
+    /* Score badge (large) */
+    .score-hero {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    /* Network rank badge */
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 13px;
+      margin-top: 8px;
     }
 
     /* ── Responsive ── */
     @media (max-width: 700px) {
       .topbar { padding: 0 16px; }
-      .content { padding: 0 16px; }
+      .content { padding: 0 16px; margin-top: 24px; }
+      .login-card { padding: 28px 24px; }
       .cards { grid-template-columns: 1fr 1fr; }
       .search-input { width: 140px; }
-      td:nth-child(4), th:nth-child(4),
       td:nth-child(5), th:nth-child(5) { display: none; }
     }
   </style>
@@ -503,41 +457,49 @@
 ═══════════════════════════════════════ -->
 <div id="login-screen">
   <div class="login-card">
+
     <div class="login-logo">
       <div class="logo-icon">S</div>
       <div>
         <h1>Seedscore</h1>
-        <span>Head Office Portal</span>
+        <span>Performance Portal</span>
       </div>
     </div>
 
-    <h2>Sign in</h2>
-    <p>Enter your head office credentials to access the dashboard.</p>
+    <!-- Role tabs -->
+    <div class="role-tabs">
+      <div class="role-tab active" id="tab-ho"  onclick="switchTab('ho')">Head Office</div>
+      <div class="role-tab"        id="tab-fx"  onclick="switchTab('fx')">Franchisee</div>
+    </div>
 
-    <div class="login-error" id="login-error">Incorrect username or password. Please try again.</div>
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
 
     <form id="login-form">
+      <h2 id="login-title">Head Office sign in</h2>
+      <p  id="login-desc">Access the full network score dashboard.</p>
+
       <div class="field">
-        <label for="username">Username</label>
-        <input type="text" id="username" placeholder="headoffice" autocomplete="username" />
+        <label for="l-username">Username</label>
+        <input type="text" id="l-username" autocomplete="username" />
       </div>
       <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+        <label for="l-password">Password</label>
+        <input type="password" id="l-password" autocomplete="current-password" />
       </div>
       <button type="submit" class="btn-primary">Sign in</button>
     </form>
 
-    <div class="login-hint">Demo credentials: <strong>admin</strong> / <strong>seedscore2026</strong></div>
+    <div class="login-hint" id="login-hint">
+      Demo — Head Office: <strong>admin</strong> / <strong>seedscore2026</strong>
+    </div>
+
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════
-     APP
+     HEAD OFFICE APP
 ═══════════════════════════════════════ -->
-<div id="app">
-
-  <!-- Top bar -->
+<div id="ho-app">
   <header class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo">S</div>
@@ -555,20 +517,17 @@
     </div>
   </header>
 
-  <!-- Content -->
   <main class="content">
-
     <div class="page-heading">
       <h2>Score Overview</h2>
-      <p>All member scores as of <span id="today-date"></span></p>
+      <p>All franchisee scores as of <span id="ho-date"></span></p>
     </div>
 
-    <!-- Summary cards -->
     <div class="cards">
       <div class="card card-accent">
-        <div class="card-label">Total Members</div>
+        <div class="card-label">Total Franchisees</div>
         <div class="card-value" id="stat-total">—</div>
-        <div class="card-sub">across all departments</div>
+        <div class="card-sub">across all regions</div>
       </div>
       <div class="card card-green">
         <div class="card-label">Average Score</div>
@@ -576,7 +535,7 @@
         <div class="card-sub">out of 100</div>
       </div>
       <div class="card card-yellow">
-        <div class="card-label">Passed</div>
+        <div class="card-label">Passing</div>
         <div class="card-value" id="stat-pass">—</div>
         <div class="card-sub">score ≥ 70</div>
       </div>
@@ -587,22 +546,15 @@
       </div>
     </div>
 
-    <!-- Scores table -->
     <div class="table-card">
       <div class="table-toolbar">
-        <h3>Member Scores</h3>
+        <h3>Franchisee Scores</h3>
         <div class="toolbar-right">
-          <input
-            class="search-input"
-            type="text"
-            id="search"
-            placeholder="Search by name…"
-            oninput="renderTable()"
-          />
-          <select class="filter-select" id="dept-filter" onchange="renderTable()">
-            <option value="">All departments</option>
+          <input class="search-input" type="text" id="ho-search" placeholder="Search by name…" oninput="renderHOTable()" />
+          <select class="filter-select" id="ho-region" onchange="renderHOTable()">
+            <option value="">All regions</option>
           </select>
-          <select class="filter-select" id="status-filter" onchange="renderTable()">
+          <select class="filter-select" id="ho-status" onchange="renderHOTable()">
             <option value="">All statuses</option>
             <option value="Pass">Pass</option>
             <option value="Review">Review</option>
@@ -614,197 +566,457 @@
       <table>
         <thead>
           <tr>
-            <th onclick="sortBy('rank')">#<span class="sort-arrow" id="arrow-rank"></span></th>
-            <th onclick="sortBy('name')">Member<span class="sort-arrow" id="arrow-name"></span></th>
-            <th onclick="sortBy('dept')">Department<span class="sort-arrow" id="arrow-dept"></span></th>
-            <th onclick="sortBy('score')">Score<span class="sort-arrow" id="arrow-score"></span></th>
-            <th onclick="sortBy('trend')">Trend<span class="sort-arrow" id="arrow-trend"></span></th>
-            <th onclick="sortBy('status')">Status<span class="sort-arrow" id="arrow-status"></span></th>
+            <th onclick="hoSort('rank')">#<span class="sort-arrow" id="ha-rank"></span></th>
+            <th onclick="hoSort('name')">Franchisee<span class="sort-arrow" id="ha-name"></span></th>
+            <th onclick="hoSort('region')">Region<span class="sort-arrow" id="ha-region"></span></th>
+            <th onclick="hoSort('score')">Score<span class="sort-arrow" id="ha-score"></span></th>
+            <th onclick="hoSort('trend')">Trend<span class="sort-arrow" id="ha-trend"></span></th>
+            <th onclick="hoSort('status')">Status<span class="sort-arrow" id="ha-status"></span></th>
           </tr>
         </thead>
-        <tbody id="score-tbody"></tbody>
+        <tbody id="ho-tbody"></tbody>
       </table>
 
-      <div class="table-footer" id="table-footer"></div>
+      <div class="table-footer" id="ho-footer"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FRANCHISEE APP
+═══════════════════════════════════════ -->
+<div id="fx-app">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">S</div>
+      <div>
+        <div class="topbar-title">Seedscore</div>
+        <div class="topbar-subtitle" id="fx-topbar-sub">My Dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="user-avatar" id="fx-avatar">—</div>
+        <span id="fx-username-label">—</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-heading">
+      <h2 id="fx-heading">My Scores</h2>
+      <p>Your performance history as of <span id="fx-date"></span></p>
     </div>
 
+    <!-- Summary cards -->
+    <div class="cards">
+      <div class="card card-accent">
+        <div class="card-label">Latest Score</div>
+        <div class="score-hero" id="fx-latest">—</div>
+        <div class="card-sub" id="fx-latest-month">—</div>
+      </div>
+      <div class="card card-green">
+        <div class="card-label">6-Month Average</div>
+        <div class="card-value" id="fx-avg">—</div>
+        <div class="card-sub">out of 100</div>
+      </div>
+      <div class="card card-yellow">
+        <div class="card-label">Network Rank</div>
+        <div class="card-value" id="fx-rank">—</div>
+        <div class="card-sub" id="fx-rank-sub">—</div>
+      </div>
+      <div class="card" id="fx-status-card">
+        <div class="card-label">Current Status</div>
+        <div style="margin-top:10px;" id="fx-status-badge">—</div>
+        <div class="card-sub" id="fx-status-sub">—</div>
+      </div>
+    </div>
+
+    <!-- Trend chart -->
+    <div class="chart-card">
+      <h3>Score Trend — Last 6 Months</h3>
+      <div class="chart-wrap">
+        <svg id="fx-chart" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-x-labels" id="fx-chart-labels"></div>
+    </div>
+
+    <!-- History table -->
+    <div class="table-card">
+      <div class="table-toolbar">
+        <h3>Score History</h3>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Score</th>
+            <th>Change</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="fx-history-tbody"></tbody>
+      </table>
+    </div>
   </main>
 </div>
 
 <script>
-  /* ── Credentials ── */
-  const CREDENTIALS = { username: 'admin', password: 'seedscore2026' };
+  /* ════════════════════════════════════════
+     DATA
+  ════════════════════════════════════════ */
 
-  /* ── Sample data ── */
-  const members = [
-    { name: 'Alice Morgan',    dept: 'Sales',      score: 94, trend: '+5'  },
-    { name: 'Ben Okafor',      dept: 'Operations', score: 88, trend: '+2'  },
-    { name: 'Carla Diaz',      dept: 'Sales',      score: 85, trend: '-1'  },
-    { name: 'David Patel',     dept: 'Finance',    score: 82, trend: '+8'  },
-    { name: 'Elena Russo',     dept: 'Marketing',  score: 79, trend: '+3'  },
-    { name: 'Frank Yuen',      dept: 'Operations', score: 76, trend: '0'   },
-    { name: 'Grace Kim',       dept: 'HR',         score: 73, trend: '+1'  },
-    { name: 'Hassan Ali',      dept: 'Finance',    score: 71, trend: '-4'  },
-    { name: 'Imani Brooks',    dept: 'Marketing',  score: 68, trend: '+6'  },
-    { name: 'James Novak',     dept: 'Sales',      score: 65, trend: '-2'  },
-    { name: 'Keiko Tanaka',    dept: 'HR',         score: 61, trend: '+4'  },
-    { name: 'Liam Brennan',    dept: 'Operations', score: 57, trend: '-3'  },
-    { name: 'Maya Singh',      dept: 'Marketing',  score: 54, trend: '0'   },
-    { name: 'Nathan Cruz',     dept: 'Finance',    score: 49, trend: '-7'  },
-    { name: 'Olivia Park',     dept: 'Sales',      score: 44, trend: '-2'  },
-    { name: 'Peter Walsh',     dept: 'HR',         score: 41, trend: '-5'  },
-    { name: 'Quinn Roberts',   dept: 'Operations', score: 38, trend: '+2'  },
-    { name: 'Rosa Fontaine',   dept: 'Finance',    score: 35, trend: '-9'  },
-    { name: 'Samuel Adeyemi',  dept: 'Marketing',  score: 31, trend: '0'   },
-    { name: 'Tara Whitfield',  dept: 'HR',         score: 27, trend: '-3'  },
+  /* Head-office credential */
+  const HO_CRED = { username: 'admin', password: 'seedscore2026' };
+
+  /* Months used in history (oldest → newest) */
+  const MONTHS = ['Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026'];
+
+  /* Franchisee accounts — history ordered oldest → newest */
+  const franchisees = [
+    { name: 'Alice Morgan',   region: 'North',  username: 'alice.morgan',   password: 'alice2026',   history: [78, 83, 87, 91, 89, 94] },
+    { name: 'Ben Okafor',     region: 'South',  username: 'ben.okafor',     password: 'ben2026',     history: [72, 75, 80, 83, 86, 88] },
+    { name: 'Carla Diaz',     region: 'East',   username: 'carla.diaz',     password: 'carla2026',   history: [90, 88, 86, 87, 84, 85] },
+    { name: 'David Patel',    region: 'West',   username: 'david.patel',    password: 'david2026',   history: [60, 65, 71, 74, 74, 82] },
+    { name: 'Elena Russo',    region: 'North',  username: 'elena.russo',    password: 'elena2026',   history: [68, 70, 72, 74, 77, 79] },
+    { name: 'Frank Yuen',     region: 'South',  username: 'frank.yuen',     password: 'frank2026',   history: [80, 78, 76, 76, 76, 76] },
+    { name: 'Grace Kim',      region: 'East',   username: 'grace.kim',      password: 'grace2026',   history: [65, 67, 69, 70, 72, 73] },
+    { name: 'Hassan Ali',     region: 'West',   username: 'hassan.ali',     password: 'hassan2026',  history: [82, 80, 78, 76, 73, 71] },
+    { name: 'Imani Brooks',   region: 'North',  username: 'imani.brooks',   password: 'imani2026',   history: [55, 58, 60, 63, 65, 68] },
+    { name: 'James Novak',    region: 'South',  username: 'james.novak',    password: 'james2026',   history: [80, 75, 72, 69, 67, 65] },
+    { name: 'Keiko Tanaka',   region: 'East',   username: 'keiko.tanaka',   password: 'keiko2026',   history: [50, 53, 55, 57, 59, 61] },
+    { name: 'Liam Brennan',   region: 'West',   username: 'liam.brennan',   password: 'liam2026',    history: [68, 65, 62, 60, 58, 57] },
+    { name: 'Maya Singh',     region: 'North',  username: 'maya.singh',     password: 'maya2026',    history: [50, 51, 53, 54, 54, 54] },
+    { name: 'Nathan Cruz',    region: 'South',  username: 'nathan.cruz',    password: 'nathan2026',  history: [68, 63, 60, 55, 52, 49] },
+    { name: 'Olivia Park',    region: 'East',   username: 'olivia.park',    password: 'olivia2026',  history: [55, 52, 50, 48, 46, 44] },
+    { name: 'Peter Walsh',    region: 'West',   username: 'peter.walsh',    password: 'peter2026',   history: [60, 56, 52, 48, 44, 41] },
+    { name: 'Quinn Roberts',  region: 'North',  username: 'quinn.roberts',  password: 'quinn2026',   history: [30, 32, 34, 35, 36, 38] },
+    { name: 'Rosa Fontaine',  region: 'South',  username: 'rosa.fontaine',  password: 'rosa2026',    history: [55, 50, 46, 42, 38, 35] },
+    { name: 'Samuel Adeyemi', region: 'East',   username: 'samuel.adeyemi', password: 'samuel2026',  history: [35, 34, 33, 32, 31, 31] },
+    { name: 'Tara Whitfield', region: 'West',   username: 'tara.whitfield', password: 'tara2026',    history: [45, 42, 38, 35, 30, 27] },
   ];
 
-  /* ── Derived fields ── */
-  members.forEach(m => {
-    const n = parseInt(m.trend, 10);
-    m.trendNum = n;
-    m.status = m.score >= 70 ? 'Pass' : m.score >= 50 ? 'Review' : 'Fail';
+  /* Derive current score (last history entry), trend, status, rank */
+  franchisees.forEach(f => {
+    f.score    = f.history[f.history.length - 1];
+    f.prevScore= f.history[f.history.length - 2];
+    f.trendNum = f.score - f.prevScore;
+    f.status   = f.score >= 70 ? 'Pass' : f.score >= 50 ? 'Review' : 'Fail';
   });
 
-  /* Sorted by score descending initially → assign rank */
-  members.sort((a, b) => b.score - a.score);
-  members.forEach((m, i) => m.rank = i + 1);
+  /* Rank by current score */
+  const sorted = [...franchisees].sort((a, b) => b.score - a.score);
+  sorted.forEach((f, i) => { f.rank = i + 1; });
 
-  /* ── Sort state ── */
-  let sortCol = 'score';
-  let sortDir = -1; // -1 = desc, 1 = asc
+  /* ════════════════════════════════════════
+     LOGIN / TAB LOGIC
+  ════════════════════════════════════════ */
+  let activeRole = 'ho';
 
-  /* ── Login ── */
+  function switchTab(role) {
+    activeRole = role;
+    document.getElementById('tab-ho').classList.toggle('active', role === 'ho');
+    document.getElementById('tab-fx').classList.toggle('active', role === 'fx');
+    document.getElementById('login-error').style.display = 'none';
+
+    if (role === 'ho') {
+      document.getElementById('login-title').textContent = 'Head Office sign in';
+      document.getElementById('login-desc').textContent  = 'Access the full network score dashboard.';
+      document.getElementById('login-hint').innerHTML    =
+        'Demo: <strong>admin</strong> / <strong>seedscore2026</strong>';
+    } else {
+      document.getElementById('login-title').textContent = 'Franchisee sign in';
+      document.getElementById('login-desc').textContent  = 'View your personal score history and trends.';
+      document.getElementById('login-hint').innerHTML    =
+        'Example: <strong>alice.morgan</strong> / <strong>alice2026</strong><br>' +
+        'Format: firstname.lastname / firstname+year';
+    }
+  }
+
   document.getElementById('login-form').addEventListener('submit', e => {
     e.preventDefault();
-    const u = document.getElementById('username').value.trim();
-    const p = document.getElementById('password').value;
-    if (u === CREDENTIALS.username && p === CREDENTIALS.password) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      initDashboard();
+    const u = document.getElementById('l-username').value.trim();
+    const p = document.getElementById('l-password').value;
+
+    if (activeRole === 'ho') {
+      if (u === HO_CRED.username && p === HO_CRED.password) {
+        showApp('ho');
+        initHODashboard();
+      } else {
+        showError();
+      }
     } else {
-      document.getElementById('login-error').style.display = 'block';
+      const fx = franchisees.find(f => f.username === u && f.password === p);
+      if (fx) {
+        showApp('fx');
+        initFXDashboard(fx);
+      } else {
+        showError();
+      }
     }
   });
 
-  function logout() {
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-error').style.display = 'none';
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
+  function showError() {
+    document.getElementById('login-error').style.display = 'block';
   }
 
-  /* ── Dashboard init ── */
-  function initDashboard() {
-    /* Date */
-    document.getElementById('today-date').textContent =
-      new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  function showApp(role) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('ho-app').style.display = role === 'ho' ? 'block' : 'none';
+    document.getElementById('fx-app').style.display = role === 'fx' ? 'block' : 'none';
+  }
 
-    /* Summary cards */
-    const total = members.length;
-    const avg   = Math.round(members.reduce((s, m) => s + m.score, 0) / total);
-    const pass  = members.filter(m => m.score >= 70).length;
-    const fail  = members.filter(m => m.score < 50).length;
+  function logout() {
+    document.getElementById('ho-app').style.display = 'none';
+    document.getElementById('fx-app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('l-username').value = '';
+    document.getElementById('l-password').value = '';
+  }
+
+  /* ════════════════════════════════════════
+     HEAD OFFICE DASHBOARD
+  ════════════════════════════════════════ */
+  let hoSortCol = 'score', hoSortDir = -1;
+
+  function initHODashboard() {
+    document.getElementById('ho-date').textContent = fmtDate(new Date());
+
+    const total = franchisees.length;
+    const avg   = Math.round(franchisees.reduce((s, f) => s + f.score, 0) / total);
+    const pass  = franchisees.filter(f => f.score >= 70).length;
+    const fail  = franchisees.filter(f => f.score < 50).length;
+
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-avg').textContent   = avg;
     document.getElementById('stat-pass').textContent  = pass;
     document.getElementById('stat-fail').textContent  = fail;
 
-    /* Dept filter */
-    const depts = [...new Set(members.map(m => m.dept))].sort();
-    const sel = document.getElementById('dept-filter');
-    depts.forEach(d => {
+    const regions = [...new Set(franchisees.map(f => f.region))].sort();
+    const sel = document.getElementById('ho-region');
+    sel.innerHTML = '<option value="">All regions</option>';
+    regions.forEach(r => {
       const o = document.createElement('option');
-      o.value = d; o.textContent = d;
+      o.value = r; o.textContent = r;
       sel.appendChild(o);
     });
 
-    renderTable();
+    renderHOTable();
   }
 
-  /* ── Sort ── */
-  function sortBy(col) {
-    if (sortCol === col) { sortDir *= -1; }
-    else { sortCol = col; sortDir = col === 'score' || col === 'rank' ? -1 : 1; }
-    renderTable();
+  function hoSort(col) {
+    if (hoSortCol === col) hoSortDir *= -1;
+    else { hoSortCol = col; hoSortDir = (col === 'score' || col === 'rank') ? -1 : 1; }
+    renderHOTable();
   }
 
-  /* ── Render ── */
-  function renderTable() {
-    const q    = document.getElementById('search').value.toLowerCase();
-    const dept = document.getElementById('dept-filter').value;
-    const stat = document.getElementById('status-filter').value;
+  function renderHOTable() {
+    const q      = document.getElementById('ho-search').value.toLowerCase();
+    const region = document.getElementById('ho-region').value;
+    const status = document.getElementById('ho-status').value;
 
-    let rows = members.filter(m =>
-      (!q    || m.name.toLowerCase().includes(q)) &&
-      (!dept || m.dept === dept) &&
-      (!stat || m.status === stat)
+    let rows = franchisees.filter(f =>
+      (!q      || f.name.toLowerCase().includes(q)) &&
+      (!region || f.region === region) &&
+      (!status || f.status === status)
     );
 
-    /* Sort */
     rows.sort((a, b) => {
-      let va = a[sortCol], vb = b[sortCol];
+      let va = hoSortCol === 'trend' ? a.trendNum : a[hoSortCol];
+      let vb = hoSortCol === 'trend' ? b.trendNum : b[hoSortCol];
       if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
-      if (sortCol === 'trend') va = a.trendNum, vb = b.trendNum;
-      return va < vb ? sortDir : va > vb ? -sortDir : 0;
+      return va < vb ? hoSortDir : va > vb ? -hoSortDir : 0;
     });
 
-    /* Arrow indicators */
-    ['rank','name','dept','score','trend','status'].forEach(c => {
-      const el = document.getElementById('arrow-' + c);
+    /* Arrows */
+    ['rank','name','region','score','trend','status'].forEach(c => {
+      const el = document.getElementById('ha-' + c);
       const th = el.closest('th');
-      if (c === sortCol) {
-        el.textContent = sortDir === -1 ? ' ↓' : ' ↑';
-        th.classList.add('sorted');
-      } else {
-        el.textContent = '';
-        th.classList.remove('sorted');
-      }
+      el.textContent = c === hoSortCol ? (hoSortDir === -1 ? ' ↓' : ' ↑') : '';
+      th.classList.toggle('sorted', c === hoSortCol);
     });
 
-    /* Render rows */
-    const tbody = document.getElementById('score-tbody');
+    const tbody = document.getElementById('ho-tbody');
     tbody.innerHTML = '';
 
-    const maxScore = 100;
-
-    rows.forEach((m, i) => {
-      const pct  = (m.score / maxScore * 100).toFixed(1);
-      const color = m.score >= 70 ? '#22c55e' : m.score >= 50 ? '#eab308' : '#ef4444';
-      const rankClass = m.rank === 1 ? 'gold' : m.rank === 2 ? 'silver' : m.rank === 3 ? 'bronze' : '';
-      const statusClass = m.status === 'Pass' ? 'badge-pass' : m.status === 'Review' ? 'badge-review' : 'badge-fail';
-      const trendNum = m.trendNum;
-      const trendClass = trendNum > 0 ? 'up' : trendNum < 0 ? 'down' : 'flat';
-      const trendIcon  = trendNum > 0 ? '▲' : trendNum < 0 ? '▼' : '—';
-      const trendText  = trendNum !== 0 ? `${trendIcon} ${Math.abs(trendNum)}` : trendIcon;
+    rows.forEach(f => {
+      const color      = scoreColor(f.score);
+      const rankClass  = f.rank === 1 ? 'gold' : f.rank === 2 ? 'silver' : f.rank === 3 ? 'bronze' : '';
+      const statusCls  = statusClass(f.status);
+      const trendTxt   = trendText(f.trendNum);
+      const trendCls   = f.trendNum > 0 ? 'up' : f.trendNum < 0 ? 'down' : 'flat';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><span class="rank ${rankClass}">${m.rank}</span></td>
-        <td>
-          <div class="person-name">${m.name}</div>
-        </td>
-        <td><span style="color:var(--muted);font-size:13px;">${m.dept}</span></td>
+        <td><span class="rank ${rankClass}">${f.rank}</span></td>
+        <td><span class="person-name">${f.name}</span></td>
+        <td><span style="color:var(--muted);font-size:13px;">${f.region}</span></td>
         <td>
           <div class="score-bar-wrap">
             <div class="score-bar-bg">
-              <div class="score-bar-fill" style="width:${pct}%;background:${color};"></div>
+              <div class="score-bar-fill" style="width:${f.score}%;background:${color};"></div>
             </div>
-            <span class="score-num" style="color:${color};">${m.score}</span>
+            <span class="score-num" style="color:${color};">${f.score}</span>
           </div>
         </td>
-        <td><span class="trend ${trendClass}">${trendText}</span></td>
-        <td><span class="badge-status ${statusClass}">${m.status}</span></td>
+        <td><span class="trend ${trendCls}">${trendTxt}</span></td>
+        <td><span class="badge-status ${statusCls}">${f.status}</span></td>
       `;
       tbody.appendChild(tr);
     });
 
-    document.getElementById('table-footer').textContent =
-      `Showing ${rows.length} of ${members.length} members`;
+    document.getElementById('ho-footer').textContent =
+      `Showing ${rows.length} of ${franchisees.length} franchisees`;
+  }
+
+  /* ════════════════════════════════════════
+     FRANCHISEE DASHBOARD
+  ════════════════════════════════════════ */
+  function initFXDashboard(fx) {
+    document.getElementById('fx-date').textContent     = fmtDate(new Date());
+    document.getElementById('fx-heading').textContent  = `${fx.name} — My Scores`;
+    document.getElementById('fx-topbar-sub').textContent = fx.region + ' Region';
+    document.getElementById('fx-username-label').textContent = fx.name;
+
+    /* Avatar initials */
+    const initials = fx.name.split(' ').map(w => w[0]).join('');
+    document.getElementById('fx-avatar').textContent = initials;
+
+    /* Cards */
+    const latest = fx.history[fx.history.length - 1];
+    const avg6   = Math.round(fx.history.reduce((s, v) => s + v, 0) / fx.history.length);
+    const color  = scoreColor(latest);
+
+    document.getElementById('fx-latest').textContent       = latest;
+    document.getElementById('fx-latest').style.color       = color;
+    document.getElementById('fx-latest-month').textContent = MONTHS[MONTHS.length - 1];
+    document.getElementById('fx-avg').textContent          = avg6;
+    document.getElementById('fx-rank').textContent         = `#${fx.rank}`;
+    document.getElementById('fx-rank-sub').textContent     = `of ${franchisees.length} franchisees`;
+
+    /* Status card */
+    const statusCls = statusClass(fx.status);
+    document.getElementById('fx-status-badge').innerHTML =
+      `<span class="badge-status ${statusCls}" style="font-size:14px;padding:4px 16px;">${fx.status}</span>`;
+    document.getElementById('fx-status-sub').textContent =
+      fx.status === 'Pass' ? 'Score ≥ 70 — well done!' :
+      fx.status === 'Review' ? 'Score 50–69 — keep improving' :
+      'Score < 50 — action required';
+
+    if (fx.status === 'Pass')   document.getElementById('fx-status-card').classList.add('card-green');
+    else if (fx.status === 'Review') document.getElementById('fx-status-card').classList.add('card-yellow');
+    else                        document.getElementById('fx-status-card').classList.add('card-red');
+
+    /* Chart */
+    drawChart(fx.history);
+
+    /* Label row */
+    const labelsEl = document.getElementById('fx-chart-labels');
+    labelsEl.innerHTML = MONTHS.map(m => `<span>${m}</span>`).join('');
+
+    /* History table */
+    const tbody = document.getElementById('fx-history-tbody');
+    tbody.innerHTML = '';
+    for (let i = fx.history.length - 1; i >= 0; i--) {
+      const score  = fx.history[i];
+      const prev   = i > 0 ? fx.history[i - 1] : null;
+      const delta  = prev !== null ? score - prev : null;
+      const status = score >= 70 ? 'Pass' : score >= 50 ? 'Review' : 'Fail';
+      const col    = scoreColor(score);
+      const deltaTxt = delta === null ? '—' : trendText(delta);
+      const deltaCls = delta === null ? 'flat' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${MONTHS[i]}</td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar-bg" style="min-width:120px;">
+              <div class="score-bar-fill" style="width:${score}%;background:${col};"></div>
+            </div>
+            <span class="score-num" style="color:${col};">${score}</span>
+          </div>
+        </td>
+        <td><span class="trend ${deltaCls}">${deltaTxt}</span></td>
+        <td><span class="badge-status ${statusClass(status)}">${status}</span></td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function drawChart(history) {
+    const svg    = document.getElementById('fx-chart');
+    const W = 600, H = 180, padX = 20, padY = 16;
+    const minV = Math.max(0,  Math.min(...history) - 10);
+    const maxV = Math.min(100, Math.max(...history) + 10);
+
+    const toX = i  => padX + i * ((W - padX * 2) / (history.length - 1));
+    const toY = v  => H - padY - ((v - minV) / (maxV - minV)) * (H - padY * 2);
+
+    /* Grid lines */
+    let lines = '';
+    [0, 25, 50, 75, 100].forEach(v => {
+      if (v < minV || v > maxV) return;
+      const y = toY(v);
+      lines += `<line x1="${padX}" y1="${y}" x2="${W - padX}" y2="${y}"
+                      stroke="#2d3348" stroke-width="1"/>
+                <text x="${padX - 4}" y="${y + 4}" text-anchor="end"
+                      fill="#8892a4" font-size="10">${v}</text>`;
+    });
+
+    /* Area fill */
+    const pts = history.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
+    const firstX = toX(0), lastX = toX(history.length - 1), baseY = toY(minV);
+    const area = `M${firstX},${baseY} L${pts.split(' ').map((p,i)=> i===0?`L${p}`:`L${p}`).join(' ')} L${lastX},${baseY} Z`
+      .replace('L L', 'L ');
+
+    /* Polyline path */
+    const linePath = 'M ' + history.map((v, i) => `${toX(i)} ${toY(v)}`).join(' L ');
+
+    /* Dots */
+    let dots = '';
+    history.forEach((v, i) => {
+      const col = scoreColor(v);
+      dots += `<circle cx="${toX(i)}" cy="${toY(v)}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>
+               <title>${MONTHS[i]}: ${v}</title>`;
+    });
+
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#4f8ef7" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${lines}
+      <path d="M${firstX},${baseY} ${history.map((v,i)=>`L${toX(i)},${toY(v)}`).join('')} L${lastX},${baseY}Z"
+            fill="url(#areaGrad)"/>
+      <path d="${linePath}" fill="none" stroke="#4f8ef7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    `;
+  }
+
+  /* ════════════════════════════════════════
+     HELPERS
+  ════════════════════════════════════════ */
+  function scoreColor(s) {
+    return s >= 70 ? '#22c55e' : s >= 50 ? '#eab308' : '#ef4444';
+  }
+
+  function statusClass(s) {
+    return s === 'Pass' ? 'badge-pass' : s === 'Review' ? 'badge-review' : 'badge-fail';
+  }
+
+  function trendText(n) {
+    if (n === 0) return '—';
+    return (n > 0 ? '▲ ' : '▼ ') + Math.abs(n);
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 </script>
-
 </body>
 </html>

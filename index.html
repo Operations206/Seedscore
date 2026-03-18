@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skin Within — Seedscore Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1354,6 +1355,15 @@ input[type="range"]::-webkit-slider-thumb {
 
 <script>
 /* ════════════════════════════════════════
+   SUPABASE CONFIG
+   Replace these values with your project credentials from:
+   https://app.supabase.com → Project Settings → API
+════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://YOUR_PROJECT_REF.supabase.co';
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════ */
 const FORMSUBMIT_EMAIL = 'bethany@skinwithinaesthetics.co.uk';
@@ -1877,14 +1887,15 @@ Clients: ${d.paying} | Networking: ${d.networking.length} | Model day: ${d.model
 Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Each string: 1–2 sentences, starts with a strong action verb. Do not mention AI.`;
 
     const [feedRes,actRes]=await Promise.all([
-      fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,messages:[{role:"user",content:feedbackPrompt}]})}),
-      fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:actionsPrompt}]})})
+      db.functions.invoke('mbr-feedback',{body:{prompt:feedbackPrompt,max_tokens:1200}}),
+      db.functions.invoke('mbr-feedback',{body:{prompt:actionsPrompt,max_tokens:500}})
     ]);
 
-    const feedData=await feedRes.json(),actData=await actRes.json();
-    const feedback=feedData.content?.map(b=>b.text||'').join('\n').trim()||'Unable to generate feedback at this time.';
+    if(feedRes.error)throw feedRes.error;
+    if(actRes.error)throw actRes.error;
+
+    const feedData=feedRes.data, actData=actRes.data;
+    const feedback=feedData?.content?.map(b=>b.text||'').join('\n').trim()||'Unable to generate feedback at this time.';
 
     let actions=[
       "Organise a model day this month and promote it across your WhatsApp groups, Instagram, and your email database at least two weeks in advance.",
@@ -1899,7 +1910,33 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
 
     document.getElementById('mbrLoadingText').textContent='Sending your results to head office...';
     document.getElementById('mbrLoadingSub').textContent='Almost done';
-    const emailSent=await sendMbrEmail(d,score,tier,feedback,actions);
+
+    const [emailSent] = await Promise.all([
+      sendMbrEmail(d,score,tier,feedback,actions),
+      db.from('mbr_submissions').insert({
+        franchisee_name:   d.name,
+        location:          d.location,
+        review_month:      d.reviewMonth,
+        email:             d.email||null,
+        score,
+        tier_label:        tier.label,
+        paying_clients:    d.paying,
+        new_clients:       d.newClients,
+        returning_clients: d.returningClients,
+        no_shows:          d.noShows,
+        skinade:           d.skinade,
+        alumier:           d.alumier,
+        google_new:        d.googleNew,
+        networking:        d.networking,
+        model_day:         d.modelDay==='Yes',
+        held_event:        d.heldEvent==='Yes',
+        effort:            d.effort,
+        confidence:        d.confidence,
+        feedback,
+        actions,
+        submitted_at:      new Date().toISOString(),
+      }).then(({error})=>{ if(error) console.warn('Supabase insert error:',error); })
+    ]);
 
     document.getElementById('mbrLoadingWrap').classList.remove('active');
     renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent);

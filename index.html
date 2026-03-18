@@ -3,372 +3,808 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seedscore</title>
+  <title>Seedscore — Head Office Dashboard</title>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Tokens ── */
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1f2e;
+      --surface2:  #222839;
+      --border:    #2d3348;
+      --accent:    #4f8ef7;
+      --accent-dk: #3a72d8;
+      --green:     #22c55e;
+      --yellow:    #eab308;
+      --red:       #ef4444;
+      --text:      #e2e8f0;
+      --muted:     #8892a4;
+      --radius:    8px;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #0d1117;
-      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
-    header {
-      background-color: #161b22;
-      border-bottom: 1px solid #30363d;
-      padding: 16px 24px;
+    /* ══════════════════════════════════════
+       LOGIN SCREEN
+    ══════════════════════════════════════ */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px 48px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-logo {
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-bottom: 32px;
     }
 
-    header svg {
-      fill: #c9d1d9;
+    .login-logo .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
       flex-shrink: 0;
     }
 
-    header .repo-path {
-      font-size: 14px;
-      color: #58a6ff;
-      text-decoration: none;
+    .login-logo h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
     }
 
-    header .repo-path:hover {
-      text-decoration: underline;
-    }
-
-    header .separator {
-      color: #8b949e;
-      margin: 0 4px;
-    }
-
-    main {
-      max-width: 1012px;
-      margin: 32px auto;
-      padding: 0 24px;
-      width: 100%;
-    }
-
-    .repo-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .repo-header h1 {
-      font-size: 26px;
-      font-weight: 600;
-      color: #e6edf3;
-    }
-
-    .badge {
+    .login-logo span {
       font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 2em;
-      border: 1px solid #30363d;
-      color: #8b949e;
+      color: var(--muted);
+      display: block;
+      font-weight: 400;
+    }
+
+    .login-card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .login-card p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
       font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
     }
 
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid #30363d;
-      margin-bottom: 24px;
-      gap: 0;
-    }
-
-    .tab {
-      padding: 10px 16px;
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
       font-size: 14px;
-      color: #8b949e;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus { border-color: var(--accent); }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .tab.active {
-      color: #e6edf3;
-      border-bottom-color: #f78166;
-      font-weight: 600;
-    }
-
-    .tab:hover:not(.active) {
-      color: #c9d1d9;
-    }
-
-    .content-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 296px;
-      gap: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .content-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .readme-container {
-      background-color: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .readme-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      background-color: #161b22;
-      border-bottom: 1px solid #30363d;
-    }
-
-    .readme-header span {
-      font-size: 14px;
-      font-weight: 600;
-      color: #e6edf3;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .readme-body {
-      padding: 32px;
-    }
-
-    .readme-body h1 {
-      font-size: 2em;
-      font-weight: 600;
-      border-bottom: 1px solid #30363d;
-      padding-bottom: 0.3em;
-      margin-bottom: 16px;
-      color: #e6edf3;
-    }
-
-    .sidebar-box {
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .sidebar-box h2 {
-      font-size: 16px;
-      font-weight: 600;
-      color: #e6edf3;
-      margin-bottom: 16px;
-    }
-
-    .sidebar-box p {
-      font-size: 14px;
-      color: #8b949e;
-      margin-bottom: 12px;
-    }
-
-    .topics {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+      transition: background 0.15s;
       margin-top: 8px;
     }
 
-    .topic {
-      background-color: #388bfd1a;
-      color: #58a6ff;
-      border-radius: 2em;
-      padding: 2px 10px;
+    .btn-primary:hover { background: var(--accent-dk); }
+
+    .login-error {
+      background: #3b1212;
+      border: 1px solid var(--red);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #fca5a5;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .login-hint {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
       font-size: 12px;
-      font-weight: 500;
+      color: var(--muted);
+      text-align: center;
     }
 
-    .stats {
-      margin-top: 16px;
+    /* ══════════════════════════════════════
+       APP SHELL (hidden until logged in)
+    ══════════════════════════════════════ */
+    #app { display: none; }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 60px;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    .stat-item {
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .topbar-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .topbar-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-pill {
       display: flex;
       align-items: center;
       gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px 5px 8px;
+      font-size: 13px;
+    }
+
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn-logout:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── Main content ── */
+    .content {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 28px;
+    }
+
+    .page-heading {
+      margin-bottom: 28px;
+    }
+
+    .page-heading h2 {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .page-heading p {
       font-size: 14px;
-      color: #8b949e;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
-    .stat-item svg {
-      fill: #8b949e;
-      flex-shrink: 0;
+    /* ── Summary cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
     }
 
-    footer {
-      margin-top: auto;
-      border-top: 1px solid #30363d;
-      padding: 16px 24px;
-      text-align: center;
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+
+    .card-label {
       font-size: 12px;
-      color: #8b949e;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
     }
 
-    footer a {
-      color: #58a6ff;
-      text-decoration: none;
+    .card-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
     }
 
-    footer a:hover {
-      text-decoration: underline;
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .card-accent { border-left: 3px solid var(--accent); }
+    .card-green  { border-left: 3px solid var(--green); }
+    .card-yellow { border-left: 3px solid var(--yellow); }
+    .card-red    { border-left: 3px solid var(--red); }
+
+    /* ── Scores table ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-toolbar h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 12px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      width: 220px;
+      transition: border-color 0.15s;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+
+    select.filter-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 12px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover { color: var(--text); }
+
+    thead th.sorted { color: var(--accent); }
+
+    thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+    thead th.sorted .sort-arrow { opacity: 1; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    td { padding: 13px 20px; vertical-align: middle; }
+
+    .rank {
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 13px;
+      width: 32px;
+    }
+
+    .rank.gold   { color: #f59e0b; }
+    .rank.silver { color: #94a3b8; }
+    .rank.bronze { color: #cd7c46; }
+
+    .person-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .person-dept {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .score-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .score-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+      min-width: 80px;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .score-num {
+      font-weight: 700;
+      font-size: 15px;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-pass    { background: #14532d; color: #86efac; }
+    .badge-review  { background: #713f12; color: #fde68a; }
+    .badge-fail    { background: #450a0a; color: #fca5a5; }
+
+    .trend {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .trend.up   { color: var(--green); }
+    .trend.down { color: var(--red); }
+    .trend.flat { color: var(--muted); }
+
+    .table-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .topbar { padding: 0 16px; }
+      .content { padding: 0 16px; }
+      .cards { grid-template-columns: 1fr 1fr; }
+      .search-input { width: 140px; }
+      td:nth-child(4), th:nth-child(4),
+      td:nth-child(5), th:nth-child(5) { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <!-- GitHub Octocat logo -->
-    <svg height="32" width="32" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
-               0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
-               -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87
-               2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
-               0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12
-               0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09
-               2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
-               1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
-               0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-    </svg>
-    <a href="#" class="repo-path">Operations206</a>
-    <span class="separator">/</span>
-    <a href="#" class="repo-path" style="font-weight:600;">Seedscore</a>
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">S</div>
+      <div>
+        <h1>Seedscore</h1>
+        <span>Head Office Portal</span>
+      </div>
+    </div>
+
+    <h2>Sign in</h2>
+    <p>Enter your head office credentials to access the dashboard.</p>
+
+    <div class="login-error" id="login-error">Incorrect username or password. Please try again.</div>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="headoffice" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-primary">Sign in</button>
+    </form>
+
+    <div class="login-hint">Demo credentials: <strong>admin</strong> / <strong>seedscore2026</strong></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     APP
+═══════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">S</div>
+      <div>
+        <div class="topbar-title">Seedscore</div>
+        <div class="topbar-subtitle">Head Office Dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="user-avatar">HO</div>
+        <span>Head Office</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
   </header>
 
-  <main>
-    <!-- Repo title -->
-    <div class="repo-header">
-      <svg height="20" width="20" viewBox="0 0 16 16" fill="#8b949e" aria-hidden="true">
-        <path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75
-                 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714
-                 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c
-                 -.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0
-                 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a
-                 .25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/>
-      </svg>
-      <h1>Seedscore</h1>
-      <span class="badge">Public</span>
+  <!-- Content -->
+  <main class="content">
+
+    <div class="page-heading">
+      <h2>Score Overview</h2>
+      <p>All member scores as of <span id="today-date"></span></p>
     </div>
 
-    <!-- Tabs -->
-    <nav class="tabs">
-      <div class="tab active">
-        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path d="M1 2.5A2.5 2.5 0 013.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75
-                   0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714
-                   1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 011 11.5v-9z"/>
-        </svg>
-        Code
+    <!-- Summary cards -->
+    <div class="cards">
+      <div class="card card-accent">
+        <div class="card-label">Total Members</div>
+        <div class="card-value" id="stat-total">—</div>
+        <div class="card-sub">across all departments</div>
       </div>
-      <div class="tab">Issues</div>
-      <div class="tab">Pull requests</div>
-      <div class="tab">Actions</div>
-      <div class="tab">Settings</div>
-    </nav>
-
-    <!-- Main content -->
-    <div class="content-layout">
-
-      <!-- README -->
-      <div>
-        <div class="readme-container">
-          <div class="readme-header">
-            <span>
-              <svg height="16" width="16" viewBox="0 0 16 16" fill="#8b949e" aria-hidden="true">
-                <path d="M0 1.75A.75.75 0 01.75 1h4.253c1.227 0 2.317.59 3
-                         1.501A3.744 3.744 0 0111.006 1h4.245a.75.75 0 01.75.75v10.5a
-                         .75.75 0 01-.75.75h-4.507a2.25 2.25 0 00-1.591.659l-.622.621a
-                         .75.75 0 01-1.06 0l-.622-.621A2.25 2.25 0 005.258 13H.75a.75.75
-                         0 01-.75-.75V1.75zm7.quincy.5v8.5a3.75 3.75 0 00-3-1.501H1.5v-8.5z"/>
-              </svg>
-              README.md
-            </span>
-          </div>
-          <div class="readme-body">
-            <h1>Seedscore</h1>
-          </div>
-        </div>
+      <div class="card card-green">
+        <div class="card-label">Average Score</div>
+        <div class="card-value" id="stat-avg">—</div>
+        <div class="card-sub">out of 100</div>
       </div>
-
-      <!-- Sidebar -->
-      <aside>
-        <div class="sidebar-box">
-          <h2>About</h2>
-          <p>No description, website, or topics provided.</p>
-          <div class="topics"></div>
-        </div>
-
-        <div class="sidebar-box">
-          <div class="stats">
-            <div class="stat-item">
-              <svg height="16" width="16" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0
-                         01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8
-                         12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818
-                         6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/>
-              </svg>
-              <span>0 stars</span>
-            </div>
-            <div class="stat-item">
-              <svg height="16" width="16" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25
-                         2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251
-                         2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25
-                         2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015
-                         6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5
-                         0zm3-8.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
-              </svg>
-              <span>0 forks</span>
-            </div>
-            <div class="stat-item">
-              <svg height="16" width="16" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0
-                         100 16A8 8 0 008 0zm.5 4.75a.75.75 0 00-1.5 0v3.5a.75.75
-                         0 00.471.696l2.5 1a.75.75 0 00.557-1.392L8.5 7.742V4.75z"/>
-              </svg>
-              <span>1 commit</span>
-            </div>
-            <div class="stat-item">
-              <svg height="16" width="16" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M9.5 3.25a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1
-                         1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V9.5A2.5 2.5 0 016
-                         7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75
-                         0 100 1.5.75.75 0 000-1.5zm6.5-8.25a.75.75 0 100 1.5.75.75
-                         0 000-1.5z"/>
-            </svg>
-              <span>1 branch</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
+      <div class="card card-yellow">
+        <div class="card-label">Passed</div>
+        <div class="card-value" id="stat-pass">—</div>
+        <div class="card-sub">score ≥ 70</div>
+      </div>
+      <div class="card card-red">
+        <div class="card-label">Need Review</div>
+        <div class="card-value" id="stat-fail">—</div>
+        <div class="card-sub">score &lt; 50</div>
+      </div>
     </div>
+
+    <!-- Scores table -->
+    <div class="table-card">
+      <div class="table-toolbar">
+        <h3>Member Scores</h3>
+        <div class="toolbar-right">
+          <input
+            class="search-input"
+            type="text"
+            id="search"
+            placeholder="Search by name…"
+            oninput="renderTable()"
+          />
+          <select class="filter-select" id="dept-filter" onchange="renderTable()">
+            <option value="">All departments</option>
+          </select>
+          <select class="filter-select" id="status-filter" onchange="renderTable()">
+            <option value="">All statuses</option>
+            <option value="Pass">Pass</option>
+            <option value="Review">Review</option>
+            <option value="Fail">Fail</option>
+          </select>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('rank')">#<span class="sort-arrow" id="arrow-rank"></span></th>
+            <th onclick="sortBy('name')">Member<span class="sort-arrow" id="arrow-name"></span></th>
+            <th onclick="sortBy('dept')">Department<span class="sort-arrow" id="arrow-dept"></span></th>
+            <th onclick="sortBy('score')">Score<span class="sort-arrow" id="arrow-score"></span></th>
+            <th onclick="sortBy('trend')">Trend<span class="sort-arrow" id="arrow-trend"></span></th>
+            <th onclick="sortBy('status')">Status<span class="sort-arrow" id="arrow-status"></span></th>
+          </tr>
+        </thead>
+        <tbody id="score-tbody"></tbody>
+      </table>
+
+      <div class="table-footer" id="table-footer"></div>
+    </div>
+
   </main>
+</div>
 
-  <footer>
-    <p>
-      &copy; 2026 Operations206 &mdash;
-      <a href="#">Seedscore</a> &mdash;
-      Generated from GitHub repository
-    </p>
-  </footer>
+<script>
+  /* ── Credentials ── */
+  const CREDENTIALS = { username: 'admin', password: 'seedscore2026' };
+
+  /* ── Sample data ── */
+  const members = [
+    { name: 'Alice Morgan',    dept: 'Sales',      score: 94, trend: '+5'  },
+    { name: 'Ben Okafor',      dept: 'Operations', score: 88, trend: '+2'  },
+    { name: 'Carla Diaz',      dept: 'Sales',      score: 85, trend: '-1'  },
+    { name: 'David Patel',     dept: 'Finance',    score: 82, trend: '+8'  },
+    { name: 'Elena Russo',     dept: 'Marketing',  score: 79, trend: '+3'  },
+    { name: 'Frank Yuen',      dept: 'Operations', score: 76, trend: '0'   },
+    { name: 'Grace Kim',       dept: 'HR',         score: 73, trend: '+1'  },
+    { name: 'Hassan Ali',      dept: 'Finance',    score: 71, trend: '-4'  },
+    { name: 'Imani Brooks',    dept: 'Marketing',  score: 68, trend: '+6'  },
+    { name: 'James Novak',     dept: 'Sales',      score: 65, trend: '-2'  },
+    { name: 'Keiko Tanaka',    dept: 'HR',         score: 61, trend: '+4'  },
+    { name: 'Liam Brennan',    dept: 'Operations', score: 57, trend: '-3'  },
+    { name: 'Maya Singh',      dept: 'Marketing',  score: 54, trend: '0'   },
+    { name: 'Nathan Cruz',     dept: 'Finance',    score: 49, trend: '-7'  },
+    { name: 'Olivia Park',     dept: 'Sales',      score: 44, trend: '-2'  },
+    { name: 'Peter Walsh',     dept: 'HR',         score: 41, trend: '-5'  },
+    { name: 'Quinn Roberts',   dept: 'Operations', score: 38, trend: '+2'  },
+    { name: 'Rosa Fontaine',   dept: 'Finance',    score: 35, trend: '-9'  },
+    { name: 'Samuel Adeyemi',  dept: 'Marketing',  score: 31, trend: '0'   },
+    { name: 'Tara Whitfield',  dept: 'HR',         score: 27, trend: '-3'  },
+  ];
+
+  /* ── Derived fields ── */
+  members.forEach(m => {
+    const n = parseInt(m.trend, 10);
+    m.trendNum = n;
+    m.status = m.score >= 70 ? 'Pass' : m.score >= 50 ? 'Review' : 'Fail';
+  });
+
+  /* Sorted by score descending initially → assign rank */
+  members.sort((a, b) => b.score - a.score);
+  members.forEach((m, i) => m.rank = i + 1);
+
+  /* ── Sort state ── */
+  let sortCol = 'score';
+  let sortDir = -1; // -1 = desc, 1 = asc
+
+  /* ── Login ── */
+  document.getElementById('login-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    if (u === CREDENTIALS.username && p === CREDENTIALS.password) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      initDashboard();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  });
+
+  function logout() {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+  }
+
+  /* ── Dashboard init ── */
+  function initDashboard() {
+    /* Date */
+    document.getElementById('today-date').textContent =
+      new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    /* Summary cards */
+    const total = members.length;
+    const avg   = Math.round(members.reduce((s, m) => s + m.score, 0) / total);
+    const pass  = members.filter(m => m.score >= 70).length;
+    const fail  = members.filter(m => m.score < 50).length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-avg').textContent   = avg;
+    document.getElementById('stat-pass').textContent  = pass;
+    document.getElementById('stat-fail').textContent  = fail;
+
+    /* Dept filter */
+    const depts = [...new Set(members.map(m => m.dept))].sort();
+    const sel = document.getElementById('dept-filter');
+    depts.forEach(d => {
+      const o = document.createElement('option');
+      o.value = d; o.textContent = d;
+      sel.appendChild(o);
+    });
+
+    renderTable();
+  }
+
+  /* ── Sort ── */
+  function sortBy(col) {
+    if (sortCol === col) { sortDir *= -1; }
+    else { sortCol = col; sortDir = col === 'score' || col === 'rank' ? -1 : 1; }
+    renderTable();
+  }
+
+  /* ── Render ── */
+  function renderTable() {
+    const q    = document.getElementById('search').value.toLowerCase();
+    const dept = document.getElementById('dept-filter').value;
+    const stat = document.getElementById('status-filter').value;
+
+    let rows = members.filter(m =>
+      (!q    || m.name.toLowerCase().includes(q)) &&
+      (!dept || m.dept === dept) &&
+      (!stat || m.status === stat)
+    );
+
+    /* Sort */
+    rows.sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
+      if (sortCol === 'trend') va = a.trendNum, vb = b.trendNum;
+      return va < vb ? sortDir : va > vb ? -sortDir : 0;
+    });
+
+    /* Arrow indicators */
+    ['rank','name','dept','score','trend','status'].forEach(c => {
+      const el = document.getElementById('arrow-' + c);
+      const th = el.closest('th');
+      if (c === sortCol) {
+        el.textContent = sortDir === -1 ? ' ↓' : ' ↑';
+        th.classList.add('sorted');
+      } else {
+        el.textContent = '';
+        th.classList.remove('sorted');
+      }
+    });
+
+    /* Render rows */
+    const tbody = document.getElementById('score-tbody');
+    tbody.innerHTML = '';
+
+    const maxScore = 100;
+
+    rows.forEach((m, i) => {
+      const pct  = (m.score / maxScore * 100).toFixed(1);
+      const color = m.score >= 70 ? '#22c55e' : m.score >= 50 ? '#eab308' : '#ef4444';
+      const rankClass = m.rank === 1 ? 'gold' : m.rank === 2 ? 'silver' : m.rank === 3 ? 'bronze' : '';
+      const statusClass = m.status === 'Pass' ? 'badge-pass' : m.status === 'Review' ? 'badge-review' : 'badge-fail';
+      const trendNum = m.trendNum;
+      const trendClass = trendNum > 0 ? 'up' : trendNum < 0 ? 'down' : 'flat';
+      const trendIcon  = trendNum > 0 ? '▲' : trendNum < 0 ? '▼' : '—';
+      const trendText  = trendNum !== 0 ? `${trendIcon} ${Math.abs(trendNum)}` : trendIcon;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="rank ${rankClass}">${m.rank}</span></td>
+        <td>
+          <div class="person-name">${m.name}</div>
+        </td>
+        <td><span style="color:var(--muted);font-size:13px;">${m.dept}</span></td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar-bg">
+              <div class="score-bar-fill" style="width:${pct}%;background:${color};"></div>
+            </div>
+            <span class="score-num" style="color:${color};">${m.score}</span>
+          </div>
+        </td>
+        <td><span class="trend ${trendClass}">${trendText}</span></td>
+        <td><span class="badge-status ${statusClass}">${m.status}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('table-footer').textContent =
+      `Showing ${rows.length} of ${members.length} members`;
+  }
+</script>
 
 </body>
 </html>

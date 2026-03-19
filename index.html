@@ -2144,30 +2144,38 @@ Total: 340–400 words.`;
 Clients: ${d.paying} | Networking: ${d.networking.length} | Model day: ${d.modelDay} | Skinade: ${d.skinade} | Alumier: ${d.alumier} | Google reviews: ${d.googleNew} new | WA community: ${d.wasCommunity} | Email: ${d.emailWeekly} | Confidence: ${d.confidence}/10 | Next milestone: ${nextM?nextM.pts+' clients ('+nextM.title+')':'all achieved'}.
 Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Each string: 1–2 sentences, starts with a strong action verb. Do not mention AI.`;
 
-    const [feedRes,actRes]=await Promise.all([
-      db.functions.invoke('smart-handler',{body:{prompt:feedbackPrompt,max_tokens:1200}}),
-      db.functions.invoke('smart-handler',{body:{prompt:actionsPrompt,max_tokens:500}})
-    ]);
-
-    if(feedRes.error)throw feedRes.error;
-    if(actRes.error)throw actRes.error;
-
-    const feedData=feedRes.data, actData=actRes.data;
-    const feedParts=feedData?.content?.map(b=>b.text||'');
-    const feedback=(feedParts&&feedParts.length?feedParts.join('\n').trim():'')||'Unable to generate feedback at this time.';
-
+    // AI generation is non-fatal — if the Edge Function is unavailable,
+    // fallback content is used and the submission still saves and displays.
+    let feedback='Your personalised feedback could not be generated automatically this time. Head office will follow up with feedback based on your submission.';
     let actions=[
       "Organise a model day this month and promote it across your WhatsApp groups, Instagram, and your email database at least two weeks in advance.",
       "Ask every single client this month for a Google review — set a target of at least 5 new reviews before your next Monthly Business Review.",
       "Send a weekly email or WhatsApp message to your patient community every Monday morning — keep it short, warm, and include a treatment highlight or limited offer."
     ];
-    try {
-      const raw=actData.content?.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
-      const parsed=JSON.parse(raw);
-      if(Array.isArray(parsed)&&parsed.length===3)actions=parsed;
-    } catch(e){ console.warn('Action parse failed'); }
 
-    document.getElementById('mbrLoadingText').textContent='Sending your results to head office...';
+    try {
+      document.getElementById('mbrLoadingText').textContent='Generating your personalised feedback...';
+      const [feedRes,actRes]=await Promise.all([
+        db.functions.invoke('smart-handler',{body:{prompt:feedbackPrompt,max_tokens:1200}}),
+        db.functions.invoke('smart-handler',{body:{prompt:actionsPrompt,max_tokens:500}})
+      ]);
+      if(!feedRes.error){
+        const feedParts=feedRes.data?.content?.map(b=>b.text||'');
+        const parsed=feedParts&&feedParts.length?feedParts.join('\n').trim():'';
+        if(parsed) feedback=parsed;
+      } else { console.warn('Feedback function error:',feedRes.error); }
+      if(!actRes.error){
+        try {
+          const raw=actRes.data?.content?.map(b=>b.text||'')?.join('')?.trim()?.replace(/```json|```/g,'')?.trim();
+          const parsedAct=JSON.parse(raw);
+          if(Array.isArray(parsedAct)&&parsedAct.length===3) actions=parsedAct;
+        } catch(e){ console.warn('Action parse failed',e); }
+      } else { console.warn('Actions function error:',actRes.error); }
+    } catch(aiErr){
+      console.warn('AI generation unavailable, using fallback:',aiErr);
+    }
+
+    document.getElementById('mbrLoadingText').textContent='Saving your results...';
     document.getElementById('mbrLoadingSub').textContent='Almost done';
 
     const [emailSent] = await Promise.all([
@@ -2205,7 +2213,7 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
     document.getElementById('mbrLoadingWrap').classList.remove('active');
     document.getElementById('mbrFormWrap').style.display='block';
     document.getElementById('mbrSubmitBtn').disabled=false;
-    errEl.textContent='Connection error — please check your internet and try again.';
+    errEl.textContent='Submission error — please try again or contact head office.';
     errEl.classList.add('show');
   }
 }

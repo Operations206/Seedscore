@@ -1478,6 +1478,7 @@ const HO_CRED = { username: 'admin', password: 'seedscore2026' };
 const MONTHS  = ['Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026'];
 
 let franchisees = [];
+let currentFx = null;
 
 function processFranchisees(list) {
   list.forEach(f => {
@@ -1551,7 +1552,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
   } else {
     await loadFranchisees();
     const fx = franchisees.find(f=>f.username===u && f.password===p);
-    if (fx) { showApp('fx'); initFXDashboard(fx); }
+    if (fx) { currentFx = fx; showApp('fx'); initFXDashboard(fx); }
     else showLoginError();
   }
   btn.disabled = false;
@@ -2202,7 +2203,13 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
         feedback,
         actions,
         submitted_at:      new Date().toISOString(),
-      }).then(({error})=>{ if(error) console.warn('Supabase insert error:',error); })
+      }).then(({error})=>{ if(error) console.warn('Supabase insert error:',error); }),
+      currentFx ? (async () => {
+        const newHistory = [...(currentFx.history || []), score];
+        const { error } = await db.from('franchisees').update({ history: newHistory }).eq('id', currentFx.id);
+        if (!error) { currentFx.history = newHistory; currentFx.score = score; }
+        else console.warn('Franchisee history update error:', error);
+      })() : Promise.resolve()
     ]);
 
     document.getElementById('mbrLoadingWrap').classList.remove('active');

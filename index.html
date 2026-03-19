@@ -1233,6 +1233,11 @@ tr.freq-overdue { background: rgba(61,0,0,0.025); }
         <div id="fx-actions-list"></div>
       </div>
 
+      <div class="chart-card" id="fx-feedback-section" style="display:none;">
+        <h3>Latest Feedback from Head Office</h3>
+        <div id="fx-feedback-body" style="font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;"></div>
+      </div>
+
     </div>
 
     <!-- MBR PANEL -->
@@ -1260,7 +1265,7 @@ tr.freq-overdue { background: rgba(61,0,0,0.025); }
           <div class="mbr-section">
             <div class="section-header"><div class="section-num">1</div><div><div class="section-title">Your Details</div><div class="section-desc">Tell us who you are and which month this review covers</div></div></div>
             <div class="two-col">
-              <div><label>Your Full Name</label><input type="text" id="mbr-name" placeholder="e.g. Jane Smith"></div>
+              <div><label>Your Full Name</label><input type="text" id="mbr-name" placeholder="e.g. Jane Smith" readonly style="opacity:0.7;cursor:default;"></div>
               <div><label>Clinic / Location</label><input type="text" id="mbr-location" placeholder="e.g. Manchester North"></div>
             </div>
             <div class="two-col">
@@ -1852,27 +1857,48 @@ let hoSortCol='score', hoSortDir=-1;
 
 async function initHODashboard() {
   document.getElementById('ho-date').textContent = fmtDate(new Date());
-  const total=franchisees.length;
-  const avg  =total?Math.round(franchisees.reduce((s,f)=>s+f.score,0)/total):0;
-  const pass =franchisees.filter(f=>f.score>=70).length;
-  const fail =franchisees.filter(f=>f.score<50).length;
+
+  // Load all submissions first — they are the single source of truth for scores
+  const { data: subs, error: subErr } = await db.from('mbr_submissions')
+    .select('franchisee_name, review_month, submitted_at, skinade, alumier, paying_clients, new_clients, google_new, score')
+    .order('review_month', { ascending: true });
+  allSubmissions = subErr ? [] : (subs || []);
+  if (subErr) console.warn('Could not load submissions:', subErr);
+
+  // Group submissions by franchisee name
+  const subsByFx = {};
+  allSubmissions.forEach(s => {
+    if (!subsByFx[s.franchisee_name]) subsByFx[s.franchisee_name] = [];
+    subsByFx[s.franchisee_name].push(s);
+  });
+
+  // Derive each franchisee's live score/trend directly from submissions
+  franchisees.forEach(f => {
+    const arr    = subsByFx[f.name] || [];
+    f.score      = arr.length ? arr[arr.length - 1].score : 0;
+    f.prevScore  = arr.length > 1 ? arr[arr.length - 2].score : f.score;
+    f.trendNum   = f.score - f.prevScore;
+    f.status     = f.score >= 70 ? 'Pass' : f.score >= 50 ? 'Review' : 'Fail';
+  });
+  // Re-rank based on live scores
+  [...franchisees].sort((a, b) => b.score - a.score).forEach((f, i) => { f.rank = i + 1; });
+
+  const total = franchisees.length;
+  const avg   = total ? Math.round(franchisees.reduce((s, f) => s + f.score, 0) / total) : 0;
+  const pass  = franchisees.filter(f => f.score >= 70).length;
+  const fail  = franchisees.filter(f => f.score < 50).length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-avg').textContent   = avg;
   document.getElementById('stat-pass').textContent  = pass;
   document.getElementById('stat-fail').textContent  = fail;
 
-  const regions=[...new Set(franchisees.map(f=>f.region))].sort();
-  const sel=document.getElementById('ho-region');
-  sel.innerHTML='<option value="">All regions</option>';
-  regions.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+  const regions = [...new Set(franchisees.map(f => f.region))].sort();
+  const sel = document.getElementById('ho-region');
+  sel.innerHTML = '<option value="">All regions</option>';
+  regions.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
   renderHOTable();
 
-  // Load all submissions for insight sections
-  const { data: subs, error: subErr } = await db.from('mbr_submissions')
-    .select('franchisee_name, review_month, submitted_at, skinade, alumier, paying_clients, new_clients, google_new')
-    .order('review_month', { ascending: true });
-  if (subErr) { console.warn('Could not load submissions for insights:', subErr); return; }
-  allSubmissions = subs || [];
+  // Render insight sections
   renderRetailTotals(allSubmissions);
   renderRetailChart(allSubmissions);
   renderRetailBreakdown(allSubmissions);
@@ -2088,11 +2114,12 @@ async function initFXDashboard(fx) {
   document.getElementById('fx-username-label').textContent = fx.name;
   document.getElementById('fx-avatar').textContent         = fx.name.split(' ').map(w=>w[0]).join('');
 
-  // Load submission history from Supabase
-  const { data: subs } = await db.from('mbr_submissions')
-    .select('review_month, score, tier_label, paying_clients, actions, submitted_at')
+  // Load submission history from Supabase — match on exact registered name
+  const { data: subs, error: fxSubErr } = await db.from('mbr_submissions')
+    .select('review_month, score, tier_label, paying_clients, new_clients, skinade, alumier, google_new, actions, feedback, submitted_at')
     .eq('franchisee_name', fx.name)
     .order('review_month', { ascending: true });
+  if (fxSubErr) console.error('FX dashboard load error:', fxSubErr);
 
   const submissions = subs || [];
   const lastSub = submissions[submissions.length - 1];
@@ -2162,12 +2189,16 @@ async function initFXDashboard(fx) {
       '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);padding:1.5rem;">No submissions yet — complete your Monthly Business Review to see your scores here.</td></tr>';
   }
 
-  // Milestone ladder and priority actions from last submission
+  // Milestone ladder, priority actions, and feedback from last submission
   if(lastSub){
     buildFXLadder(lastSub.paying_clients||0);
     document.getElementById('fx-milestone-section').style.display='block';
     buildFXActions(lastSub.actions||[]);
     document.getElementById('fx-actions-section').style.display='block';
+    if(lastSub.feedback && !lastSub.feedback.startsWith('Your personalised feedback could not')){
+      document.getElementById('fx-feedback-body').textContent = lastSub.feedback;
+      document.getElementById('fx-feedback-section').style.display='block';
+    }
   }
 
   // Pre-fill MBR name/location
@@ -2504,9 +2535,9 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
         try {
           const raw=actRes.data?.content?.map(b=>b.text||'')?.join('')?.trim()?.replace(/```json|```/g,'')?.trim();
           const parsedAct=JSON.parse(raw);
-          if(Array.isArray(parsedAct)&&parsedAct.length===3) actions=parsedAct;
+          if(Array.isArray(parsedAct)&&parsedAct.length>0) actions=parsedAct.slice(0,3);
         } catch(e){ console.warn('Action parse failed',e); }
-      } else { console.warn('Actions function error:',actRes.error); }
+      } else { console.error('Actions function error:',actRes.error); }
     } catch(aiErr){
       console.warn('AI generation unavailable, using fallback:',aiErr);
     }
@@ -2514,10 +2545,14 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
     document.getElementById('mbrLoadingText').textContent='Saving your results...';
     document.getElementById('mbrLoadingSub').textContent='Almost done';
 
+    // Always use the authenticated franchisee's name — never the editable form field
+    const fxName = currentFx ? currentFx.name : d.name;
+
+    let insertError = null;
     const [emailSent] = await Promise.all([
       sendMbrEmail(d,score,tier,feedback,actions),
       db.from('mbr_submissions').insert({
-        franchisee_name:   d.name,
+        franchisee_name:   fxName,
         location:          d.location,
         review_month:      d.reviewMonth,
         email:             d.email||null,
@@ -2538,17 +2573,16 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
         feedback,
         actions,
         submitted_at:      new Date().toISOString(),
-      }).then(({error})=>{ if(error) console.warn('Supabase insert error:',error); }),
-      currentFx ? (async () => {
-        const newHistory = [...(currentFx.history || []), score];
-        const { error } = await db.from('franchisees').update({ history: newHistory }).eq('id', currentFx.id);
-        if (!error) { currentFx.history = newHistory; currentFx.score = score; }
-        else console.warn('Franchisee history update error:', error);
-      })() : Promise.resolve()
+      }).then(({error})=>{ if(error){ console.error('Supabase insert error:',error); insertError=error; } }),
     ]);
 
+    if(insertError){
+      console.error('Submission save failed:', insertError);
+      // Results still display so franchisee sees their score, but warn them
+    }
+
     document.getElementById('mbrLoadingWrap').classList.remove('active');
-    renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent);
+    renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent,insertError);
 
   } catch(err) {
     console.error('MBR submit error:',err);
@@ -2563,7 +2597,7 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
 /* ════════════════════════════════════════
    MBR RENDER RESULTS
 ════════════════════════════════════════ */
-function renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent){
+function renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent,insertError){
   if(milestone){
     document.getElementById('mbrMilestoneConfetti').textContent=`${milestone.emoji} 🎉 ${milestone.emoji}`;
     document.getElementById('mbrMilestoneTitle').textContent=`Milestone Unlocked: ${milestone.title}!`;
@@ -2595,12 +2629,15 @@ function renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSen
     list.appendChild(div);
   });
   const notice=document.getElementById('mbrSentNotice');
-  if(emailSent){
-    notice.className='sent-notice ok';
-    notice.innerHTML=`✅ <strong>Your review has been submitted to head office.</strong>${d.email?' A copy has been sent to '+d.email+' too.':''}`;
-  } else {
+  if(insertError){
     notice.className='sent-notice warn';
-    notice.innerHTML=`⚠️ Results generated successfully. Please screenshot your feedback — the email notification could not be sent automatically this time.`;
+    notice.innerHTML=`⚠️ <strong>Your score and feedback have been calculated but could not be saved.</strong> Please screenshot this page and contact head office. Error: ${insertError.message||'unknown'}`;
+  } else if(emailSent){
+    notice.className='sent-notice ok';
+    notice.innerHTML=`✅ <strong>Your review has been submitted and saved.</strong>${d.email?' A copy has been sent to '+d.email+' too.':''}`;
+  } else {
+    notice.className='sent-notice ok';
+    notice.innerHTML=`✅ <strong>Your review has been saved.</strong> Email notification could not be sent — please screenshot your feedback.`;
   }
   document.getElementById('mbrResultsWrap').classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});

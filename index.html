@@ -792,6 +792,71 @@ input[type="range"]::-webkit-slider-thumb {
   .score-number { font-size: 3.5rem; }
   td:nth-child(5), th:nth-child(5) { display: none; }
 }
+
+/* ══════════════════════════════════════
+   HO INSIGHTS SECTIONS
+══════════════════════════════════════ */
+.ho-section-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;
+  margin: 36px 0 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.ho-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.insight-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px; margin-bottom: 20px;
+}
+.insight-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+  box-shadow: 0 1px 6px rgba(61,0,0,0.04);
+}
+.insight-card-label {
+  font-size: 10px; font-weight: 600; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+}
+.insight-card-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px; font-weight: 700; color: var(--red); line-height: 1;
+}
+.insight-card-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+.insight-card.accent { border-left: 3px solid var(--dp); }
+.insight-card.pink   { border-left: 3px solid var(--red-mid); }
+.insight-card.green  { border-left: 3px solid #4a7c59; }
+.insight-card.yellow { border-left: 3px solid #c4972a; }
+
+/* Retail bar chart */
+.retail-chart-wrap { padding: 6px 22px 18px; }
+.retail-bar-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.retail-bar-row:last-child { border-bottom: none; }
+.retail-bar-name { min-width: 150px; font-size: 13px; font-weight: 600; color: var(--text); flex-shrink: 0; }
+.retail-bar-cols { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.retail-bar-track { display: flex; align-items: center; gap: 8px; }
+.retail-bar-bg { flex: 1; height: 7px; background: var(--lp); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); min-width: 60px; }
+.retail-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+.retail-bar-fill.sk { background: var(--dp); }
+.retail-bar-fill.al { background: var(--red-mid); }
+.retail-bar-num { min-width: 30px; text-align: right; font-size: 12px; font-weight: 600; font-family: 'Cormorant Garamond', serif; color: var(--text-dim); }
+.retail-bar-legend {
+  display: flex; gap: 18px; padding: 14px 22px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-dim);
+}
+.retail-bar-legend span { display: flex; align-items: center; gap: 6px; }
+.retail-bar-legend span::before { content: ''; width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.legend-sk::before { background: var(--dp); }
+.legend-al::before { background: var(--red-mid); }
+
+/* Freq overdue highlight */
+tr.freq-overdue { background: rgba(61,0,0,0.025); }
 </style>
 </head>
 <body>
@@ -922,6 +987,101 @@ input[type="range"]::-webkit-slider-thumb {
         </table>
         <div class="table-footer" id="ho-footer"></div>
       </div>
+
+      <!-- ── Section 1: Retail & Treatment Activity ── -->
+      <div class="ho-section-label">Retail &amp; Treatment Activity</div>
+      <div class="insight-cards">
+        <div class="insight-card accent">
+          <div class="insight-card-label">Skinade Appointments</div>
+          <div class="insight-card-value" id="ho-total-skinade">—</div>
+          <div class="insight-card-sub">total across all submissions</div>
+        </div>
+        <div class="insight-card pink">
+          <div class="insight-card-label">Alumier Products Sold</div>
+          <div class="insight-card-value" id="ho-total-alumier">—</div>
+          <div class="insight-card-sub">total across all submissions</div>
+        </div>
+        <div class="insight-card green">
+          <div class="insight-card-label">Total Paying Clients</div>
+          <div class="insight-card-value" id="ho-total-paying">—</div>
+          <div class="insight-card-sub">cumulative, all franchisees</div>
+        </div>
+        <div class="insight-card yellow">
+          <div class="insight-card-label">Total New Clients</div>
+          <div class="insight-card-value" id="ho-total-new">—</div>
+          <div class="insight-card-sub">cumulative, all franchisees</div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar"><h3>Retail Activity Per Franchisee (All-time)</h3></div>
+        <div class="retail-chart-wrap" id="ho-retail-chart">
+          <div style="color:var(--text-dim);font-size:13px;padding:1rem 0;">Loading…</div>
+        </div>
+        <div class="retail-bar-legend">
+          <span class="legend-sk">Skinade appointments</span>
+          <span class="legend-al">Alumier products sold</span>
+        </div>
+      </div>
+
+      <!-- ── Section 2: Retail Sales Per Franchisee Table ── -->
+      <div class="ho-section-label">Retail Sales Breakdown</div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <h3>Skinade &amp; Alumier — Per Franchisee Totals</h3>
+          <span style="font-size:12px;color:var(--text-dim);">Sorted by combined total · includes all submissions</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Franchisee</th>
+              <th style="text-align:center;">MBRs Submitted</th>
+              <th style="text-align:center;">Skinade</th>
+              <th style="text-align:center;">Alumier</th>
+              <th style="text-align:center;">Combined</th>
+            </tr>
+          </thead>
+          <tbody id="ho-retail-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ── Section 3: Submission Frequency ── -->
+      <div class="ho-section-label">Submission Frequency</div>
+      <div class="table-card">
+        <div class="table-toolbar"><h3>MBR Submission History</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Franchisee</th>
+              <th>Region</th>
+              <th style="text-align:center;">Total MBRs</th>
+              <th>Last Submission</th>
+            </tr>
+          </thead>
+          <tbody id="ho-freq-tbody"></tbody>
+        </table>
+        <div class="table-footer" id="ho-freq-footer"></div>
+      </div>
+
+      <!-- ── Section 4: Google Review Growth ── -->
+      <div class="ho-section-label">Google Review Growth</div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <h3>New Google Reviews — Latest vs Previous Submission</h3>
+          <span style="font-size:12px;color:var(--text-dim);">Tracks new reviews added each month</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Franchisee</th>
+              <th>Latest (new reviews)</th>
+              <th>Previous</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody id="ho-google-tbody"></tbody>
+        </table>
+      </div>
+
     </main>
   </div>
 
@@ -1486,6 +1646,7 @@ const MONTHS  = ['Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 202
 
 let franchisees = [];
 let currentFx = null;
+let allSubmissions = [];
 
 function processFranchisees(list) {
   list.forEach(f => {
@@ -1689,10 +1850,10 @@ function showPanel(panel) {
 ════════════════════════════════════════ */
 let hoSortCol='score', hoSortDir=-1;
 
-function initHODashboard() {
+async function initHODashboard() {
   document.getElementById('ho-date').textContent = fmtDate(new Date());
   const total=franchisees.length;
-  const avg  =Math.round(franchisees.reduce((s,f)=>s+f.score,0)/total);
+  const avg  =total?Math.round(franchisees.reduce((s,f)=>s+f.score,0)/total):0;
   const pass =franchisees.filter(f=>f.score>=70).length;
   const fail =franchisees.filter(f=>f.score<50).length;
   document.getElementById('stat-total').textContent = total;
@@ -1705,6 +1866,18 @@ function initHODashboard() {
   sel.innerHTML='<option value="">All regions</option>';
   regions.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
   renderHOTable();
+
+  // Load all submissions for insight sections
+  const { data: subs, error: subErr } = await db.from('mbr_submissions')
+    .select('franchisee_name, review_month, submitted_at, skinade, alumier, paying_clients, new_clients, google_new')
+    .order('review_month', { ascending: true });
+  if (subErr) { console.warn('Could not load submissions for insights:', subErr); return; }
+  allSubmissions = subs || [];
+  renderRetailTotals(allSubmissions);
+  renderRetailChart(allSubmissions);
+  renderRetailBreakdown(allSubmissions);
+  renderSubmissionFreq(allSubmissions);
+  renderGoogleTrends(allSubmissions);
 }
 
 function hoSort(col) {
@@ -1751,6 +1924,158 @@ function renderHOTable() {
     tbody.appendChild(tr);
   });
   document.getElementById('ho-footer').textContent=`Showing ${rows.length} of ${franchisees.length} franchisees`;
+}
+
+/* ════════════════════════════════════════
+   HO INSIGHT SECTIONS
+════════════════════════════════════════ */
+
+function renderRetailTotals(subs) {
+  const sum = (key) => subs.reduce((a, s) => a + (s[key] || 0), 0);
+  document.getElementById('ho-total-skinade').textContent = sum('skinade');
+  document.getElementById('ho-total-alumier').textContent = sum('alumier');
+  document.getElementById('ho-total-paying').textContent  = sum('paying_clients');
+  document.getElementById('ho-total-new').textContent     = sum('new_clients');
+}
+
+function renderRetailChart(subs) {
+  const byFx = {};
+  subs.forEach(s => {
+    if (!byFx[s.franchisee_name]) byFx[s.franchisee_name] = { sk: 0, al: 0 };
+    byFx[s.franchisee_name].sk += s.skinade || 0;
+    byFx[s.franchisee_name].al += s.alumier || 0;
+  });
+  // Include franchisees with zero submissions
+  franchisees.forEach(f => { if (!byFx[f.name]) byFx[f.name] = { sk: 0, al: 0 }; });
+
+  const rows = Object.entries(byFx).sort((a, b) => (b[1].sk + b[1].al) - (a[1].sk + a[1].al));
+  const max  = Math.max(...rows.map(([, v]) => v.sk + v.al), 1);
+
+  const el = document.getElementById('ho-retail-chart');
+  if (!rows.length) { el.innerHTML = '<p style="color:var(--text-dim);font-size:13px;padding:1rem 0;">No submissions yet.</p>'; return; }
+
+  el.innerHTML = rows.map(([name, v]) => `
+    <div class="retail-bar-row">
+      <div class="retail-bar-name">${name}</div>
+      <div class="retail-bar-cols">
+        <div class="retail-bar-track">
+          <div class="retail-bar-bg"><div class="retail-bar-fill sk" style="width:${(v.sk/max*100).toFixed(1)}%"></div></div>
+          <span class="retail-bar-num">${v.sk}</span>
+        </div>
+        <div class="retail-bar-track">
+          <div class="retail-bar-bg"><div class="retail-bar-fill al" style="width:${(v.al/max*100).toFixed(1)}%"></div></div>
+          <span class="retail-bar-num">${v.al}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderRetailBreakdown(subs) {
+  const byFx = {};
+  subs.forEach(s => {
+    if (!byFx[s.franchisee_name]) byFx[s.franchisee_name] = { sk: 0, al: 0, count: 0 };
+    byFx[s.franchisee_name].sk    += s.skinade || 0;
+    byFx[s.franchisee_name].al    += s.alumier || 0;
+    byFx[s.franchisee_name].count++;
+  });
+  franchisees.forEach(f => { if (!byFx[f.name]) byFx[f.name] = { sk: 0, al: 0, count: 0 }; });
+
+  const rows = Object.entries(byFx).sort((a, b) => (b[1].sk + b[1].al) - (a[1].sk + a[1].al));
+  const tbody = document.getElementById('ho-retail-tbody');
+  tbody.innerHTML = rows.map(([name, v]) => {
+    const combined = v.sk + v.al;
+    const noSales  = combined === 0;
+    return `<tr>
+      <td><span class="person-name">${name}</span></td>
+      <td style="text-align:center;color:var(--text-dim);">${v.count}</td>
+      <td style="text-align:center;font-weight:600;color:var(--dp);">${v.sk}</td>
+      <td style="text-align:center;font-weight:600;color:var(--red-mid);">${v.al}</td>
+      <td style="text-align:center;">
+        <span style="font-weight:700;font-family:'Cormorant Garamond',serif;font-size:16px;color:${noSales?'var(--text-dim)':'var(--text)'};">${combined}</span>
+        ${noSales ? '<span class="badge-status badge-fail" style="font-size:9px;margin-left:6px;vertical-align:middle;">No sales</span>' : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderSubmissionFreq(subs) {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const byFx = {};
+  subs.forEach(s => {
+    if (!byFx[s.franchisee_name]) byFx[s.franchisee_name] = { count: 0, lastDate: null };
+    byFx[s.franchisee_name].count++;
+    const d = new Date(s.submitted_at);
+    if (!byFx[s.franchisee_name].lastDate || d > byFx[s.franchisee_name].lastDate)
+      byFx[s.franchisee_name].lastDate = d;
+  });
+  franchisees.forEach(f => { if (!byFx[f.name]) byFx[f.name] = { count: 0, lastDate: null }; });
+
+  // Sort: no submissions first, then oldest last-submission first
+  const fxMap = Object.fromEntries(franchisees.map(f => [f.name, f.region]));
+  const rows = Object.entries(byFx).sort((a, b) => {
+    if (!a[1].lastDate && !b[1].lastDate) return 0;
+    if (!a[1].lastDate) return -1;
+    if (!b[1].lastDate) return 1;
+    return a[1].lastDate - b[1].lastDate;
+  });
+
+  const tbody = document.getElementById('ho-freq-tbody');
+  tbody.innerHTML = rows.map(([name, v]) => {
+    const late    = !v.lastDate || v.lastDate < thirtyDaysAgo;
+    const lastStr = v.lastDate ? fmtDate(v.lastDate) : 'Never';
+    const badge   = late
+      ? `<span class="badge-status badge-fail" style="margin-left:8px;">${v.lastDate ? 'Overdue' : 'No submissions'}</span>`
+      : `<span class="badge-status badge-pass" style="margin-left:8px;">Up to date</span>`;
+    const region  = fxMap[name] || '—';
+    return `<tr ${late ? 'class="freq-overdue"' : ''}>
+      <td><span class="person-name">${name}</span></td>
+      <td style="color:var(--text-dim);font-size:13px;">${region}</td>
+      <td style="text-align:center;font-weight:600;font-family:'Cormorant Garamond',serif;font-size:16px;">${v.count}</td>
+      <td>${lastStr}${badge}</td>
+    </tr>`;
+  }).join('');
+
+  const late = rows.filter(([, v]) => !v.lastDate || v.lastDate < thirtyDaysAgo).length;
+  document.getElementById('ho-freq-footer').textContent =
+    late ? `${late} franchisee${late !== 1 ? 's' : ''} overdue or not yet submitted` : 'All franchisees submitted within the last 30 days';
+}
+
+function renderGoogleTrends(subs) {
+  const byFx = {};
+  subs.forEach(s => {
+    if (!byFx[s.franchisee_name]) byFx[s.franchisee_name] = [];
+    byFx[s.franchisee_name].push(s);
+  });
+  // Already sorted ascending by review_month from the query
+  franchisees.forEach(f => { if (!byFx[f.name]) byFx[f.name] = []; });
+
+  const rows = Object.entries(byFx).sort((a, b) => a[0].localeCompare(b[0]));
+  const tbody = document.getElementById('ho-google-tbody');
+  tbody.innerHTML = rows.map(([name, arr]) => {
+    if (!arr.length) return `<tr>
+      <td><span class="person-name">${name}</span></td>
+      <td style="color:var(--text-dim);">—</td><td style="color:var(--text-dim);">—</td>
+      <td><span class="trend flat">—</span></td>
+    </tr>`;
+
+    const latest  = arr[arr.length - 1];
+    const prev    = arr.length > 1 ? arr[arr.length - 2] : null;
+    const curr    = latest.google_new || 0;
+    const prevVal = prev ? (prev.google_new || 0) : null;
+    const delta   = prevVal !== null ? curr - prevVal : null;
+    const deltaTxt= delta === null ? '—' : trendText(delta);
+    const deltaCls= delta === null ? 'flat' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+    const latestMo= new Date(latest.review_month+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+    const prevMo  = prev ? new Date(prev.review_month+'-01').toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '—';
+    return `<tr>
+      <td><span class="person-name">${name}</span></td>
+      <td><span style="font-weight:700;font-family:'Cormorant Garamond',serif;font-size:16px;">${curr}</span>
+          <span style="font-size:11px;color:var(--text-dim);margin-left:5px;">${latestMo}</span></td>
+      <td><span style="color:var(--text-dim);">${prevVal !== null ? prevVal : '—'}</span>
+          <span style="font-size:11px;color:var(--text-dim);margin-left:5px;">${prevMo}</span></td>
+      <td><span class="trend ${deltaCls}">${deltaTxt}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 /* ════════════════════════════════════════

@@ -2067,8 +2067,8 @@ Clients: ${d.paying} | Networking: ${d.networking.length} | Model day: ${d.model
 Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Each string: 1–2 sentences, starts with a strong action verb. Do not mention AI.`;
 
     const [feedRes,actRes]=await Promise.all([
-      db.functions.invoke('mbr-feedback',{body:{prompt:feedbackPrompt,max_tokens:1200}}),
-      db.functions.invoke('mbr-feedback',{body:{prompt:actionsPrompt,max_tokens:500}})
+      db.functions.invoke('smart-handler',{body:{prompt:feedbackPrompt,max_tokens:1200}}),
+      db.functions.invoke('smart-handler',{body:{prompt:actionsPrompt,max_tokens:500}})
     ]);
 
     if(feedRes.error)throw feedRes.error;

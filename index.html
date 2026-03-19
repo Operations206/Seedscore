@@ -1055,6 +1055,17 @@ input[type="range"]::-webkit-slider-thumb {
           <tbody id="fx-history-tbody"></tbody>
         </table>
       </div>
+
+      <div class="milestones-track" id="fx-milestone-section" style="display:none;">
+        <h3>My Client Milestone Ladder</h3>
+        <div id="fx-milestone-ladder"></div>
+      </div>
+
+      <div class="actions-card" id="fx-actions-section" style="display:none;">
+        <h3>My 3 Priority Actions — Last Submission</h3>
+        <div id="fx-actions-list"></div>
+      </div>
+
     </div>
 
     <!-- MBR PANEL -->
@@ -1420,14 +1431,6 @@ input[type="range"]::-webkit-slider-thumb {
             <div class="metric-card"><div class="metric-val" id="mbrMActivities">0</div><div class="metric-name">BD Activities</div></div>
             <div class="metric-card"><div class="metric-val" id="mbrMEffort">0</div><div class="metric-name">Effort Rating</div></div>
           </div>
-          <div class="milestones-track">
-            <h3>Your Client Milestone Ladder</h3>
-            <div id="mbrMilestoneLadder"></div>
-          </div>
-          <div class="next-nudge" id="mbrNextNudge">
-            <div class="next-nudge-icon">🎯</div>
-            <div class="next-nudge-text" id="mbrNextNudgeText"></div>
-          </div>
           <div class="feedback-card">
             <h3>Your Personalised Feedback</h3>
             <div class="feedback-body" id="mbrFeedbackBody"></div>
@@ -1435,6 +1438,14 @@ input[type="range"]::-webkit-slider-thumb {
           <div class="actions-card">
             <h3>Your 3 Priority Actions for Next Month</h3>
             <div id="mbrActionsList"></div>
+          </div>
+          <div class="milestones-track">
+            <h3>Your Client Milestone Ladder</h3>
+            <div id="mbrMilestoneLadder"></div>
+          </div>
+          <div class="next-nudge" id="mbrNextNudge">
+            <div class="next-nudge-icon">🎯</div>
+            <div class="next-nudge-text" id="mbrNextNudgeText"></div>
           </div>
           <div class="sent-notice" id="mbrSentNotice"></div>
           <button class="restart-btn" onclick="mbrRestart()">← Complete a new review</button>
@@ -1734,62 +1745,129 @@ function renderHOTable() {
 /* ════════════════════════════════════════
    FRANCHISEE DASHBOARD
 ════════════════════════════════════════ */
-function initFXDashboard(fx) {
-  document.getElementById('fx-date').textContent        = fmtDate(new Date());
-  document.getElementById('fx-heading').textContent     = `${fx.name} — My Scores`;
-  document.getElementById('fx-topbar-sub').textContent  = fx.region+' Region';
+async function initFXDashboard(fx) {
+  document.getElementById('fx-date').textContent           = fmtDate(new Date());
+  document.getElementById('fx-heading').textContent        = `${fx.name} — My Dashboard`;
+  document.getElementById('fx-topbar-sub').textContent     = fx.region+' Region';
   document.getElementById('fx-username-label').textContent = fx.name;
-  document.getElementById('fx-avatar').textContent      = fx.name.split(' ').map(w=>w[0]).join('');
+  document.getElementById('fx-avatar').textContent         = fx.name.split(' ').map(w=>w[0]).join('');
 
-  const latest=fx.history[fx.history.length-1];
-  const avg6  =Math.round(fx.history.reduce((s,v)=>s+v,0)/fx.history.length);
-  const color =scoreColor(latest);
+  // Load submission history from Supabase
+  const { data: subs } = await db.from('mbr_submissions')
+    .select('review_month, score, tier_label, paying_clients, actions, submitted_at')
+    .eq('franchisee_name', fx.name)
+    .order('review_month', { ascending: true });
 
-  document.getElementById('fx-latest').textContent      = latest;
-  document.getElementById('fx-latest').style.color      = color;
-  document.getElementById('fx-latest-month').textContent= MONTHS[MONTHS.length-1];
-  document.getElementById('fx-avg').textContent         = avg6;
-  document.getElementById('fx-rank').textContent        = `#${fx.rank}`;
-  document.getElementById('fx-rank-sub').textContent    = `of ${franchisees.length} franchisees`;
+  const submissions = subs || [];
+  const lastSub = submissions[submissions.length - 1];
 
-  const statusCls=statusClass(fx.status);
-  document.getElementById('fx-status-badge').innerHTML=
-    `<span class="badge-status ${statusCls}" style="font-size:13px;padding:4px 14px;">${fx.status}</span>`;
-  document.getElementById('fx-status-sub').textContent=
-    fx.status==='Pass'?'Score ≥ 70 — well done!':
-    fx.status==='Review'?'Score 50–69 — keep improving':'Score < 50 — action required';
+  if (submissions.length > 0) {
+    const scores      = submissions.map(s => s.score);
+    const monthLabels = submissions.map(s => {
+      const d = new Date(s.review_month+'-01');
+      return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+    });
+    const latest = scores[scores.length-1];
+    const avg6   = Math.round(scores.slice(-6).reduce((a,b)=>a+b,0)/Math.min(scores.length,6));
+    const color  = scoreColor(latest);
+    const status = latest>=70?'Pass':latest>=50?'Review':'Fail';
 
-  const sc=document.getElementById('fx-status-card');
-  if(fx.status==='Pass')sc.classList.add('card-green');
-  else if(fx.status==='Review')sc.classList.add('card-yellow');
-  else sc.classList.add('card-red');
+    document.getElementById('fx-latest').textContent       = latest;
+    document.getElementById('fx-latest').style.color       = color;
+    document.getElementById('fx-latest-month').textContent = monthLabels[monthLabels.length-1];
+    document.getElementById('fx-avg').textContent          = avg6;
+    document.getElementById('fx-rank').textContent         = `#${fx.rank}`;
+    document.getElementById('fx-rank-sub').textContent     = `of ${franchisees.length} franchisees`;
 
-  drawChart(fx.history);
-  document.getElementById('fx-chart-labels').innerHTML=MONTHS.map(m=>`<span>${m}</span>`).join('');
+    const statusCls = statusClass(status);
+    document.getElementById('fx-status-badge').innerHTML =
+      `<span class="badge-status ${statusCls}" style="font-size:13px;padding:4px 14px;">${status}</span>`;
+    document.getElementById('fx-status-sub').textContent =
+      status==='Pass'?'Score ≥ 70 — well done!':
+      status==='Review'?'Score 50–69 — keep improving':'Score < 50 — action required';
 
-  const tbody=document.getElementById('fx-history-tbody'); tbody.innerHTML='';
-  for(let i=fx.history.length-1;i>=0;i--){
-    const score=fx.history[i], prev=i>0?fx.history[i-1]:null;
-    const delta=prev!==null?score-prev:null;
-    const status=score>=70?'Pass':score>=50?'Review':'Fail';
-    const col=scoreColor(score);
-    const deltaTxt=delta===null?'—':trendText(delta);
-    const deltaCls=delta===null?'flat':delta>0?'up':delta<0?'down':'flat';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${MONTHS[i]}</td>
-      <td><div class="score-bar-wrap">
-        <div class="score-bar-bg" style="min-width:100px;"><div class="score-bar-fill" style="width:${score}%;background:${col};"></div></div>
-        <span class="score-num" style="color:${col};">${score}</span>
-      </div></td>
-      <td><span class="trend ${deltaCls}">${deltaTxt}</span></td>
-      <td><span class="badge-status ${statusClass(status)}">${status}</span></td>`;
-    tbody.appendChild(tr);
+    const sc = document.getElementById('fx-status-card');
+    if(status==='Pass')sc.classList.add('card-green');
+    else if(status==='Review')sc.classList.add('card-yellow');
+    else sc.classList.add('card-red');
+
+    if(scores.length > 1) drawChart(scores);
+    document.getElementById('fx-chart-labels').innerHTML = monthLabels.map(m=>`<span>${m}</span>`).join('');
+
+    const tbody = document.getElementById('fx-history-tbody'); tbody.innerHTML='';
+    for(let i=submissions.length-1;i>=0;i--){
+      const sub  = submissions[i];
+      const prev = i>0?submissions[i-1].score:null;
+      const delta = prev!==null?sub.score-prev:null;
+      const st  = sub.score>=70?'Pass':sub.score>=50?'Review':'Fail';
+      const col = scoreColor(sub.score);
+      const deltaTxt = delta===null?'—':trendText(delta);
+      const deltaCls = delta===null?'flat':delta>0?'up':delta<0?'down':'flat';
+      const monthLabel = new Date(sub.review_month+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+      const tr = document.createElement('tr');
+      tr.innerHTML=`
+        <td>${monthLabel}</td>
+        <td><div class="score-bar-wrap">
+          <div class="score-bar-bg" style="min-width:100px;"><div class="score-bar-fill" style="width:${sub.score}%;background:${col};"></div></div>
+          <span class="score-num" style="color:${col};">${sub.score}</span>
+        </div></td>
+        <td><span class="trend ${deltaCls}">${deltaTxt}</span></td>
+        <td><span class="badge-status ${statusClass(st)}">${st}</span></td>`;
+      tbody.appendChild(tr);
+    }
+  } else {
+    // No submissions yet
+    ['fx-latest','fx-avg','fx-rank'].forEach(id=>{ document.getElementById(id).textContent='—'; });
+    document.getElementById('fx-latest-month').textContent = 'No submissions yet';
+    document.getElementById('fx-rank-sub').textContent     = `of ${franchisees.length} franchisees`;
+    document.getElementById('fx-status-badge').innerHTML   = '<span style="color:var(--text-dim);font-size:13px;">No data yet</span>';
+    document.getElementById('fx-status-sub').textContent   = 'Complete your first Monthly Business Review';
+    document.getElementById('fx-history-tbody').innerHTML  =
+      '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);padding:1.5rem;">No submissions yet — complete your Monthly Business Review to see your scores here.</td></tr>';
+  }
+
+  // Milestone ladder and priority actions from last submission
+  if(lastSub){
+    buildFXLadder(lastSub.paying_clients||0);
+    document.getElementById('fx-milestone-section').style.display='block';
+    buildFXActions(lastSub.actions||[]);
+    document.getElementById('fx-actions-section').style.display='block';
   }
 
   // Pre-fill MBR name/location
   document.getElementById('mbr-name').value     = fx.name;
   document.getElementById('mbr-location').value = fx.region+' Region';
+}
+
+function buildFXLadder(pts){
+  const el=document.getElementById('fx-milestone-ladder'); el.innerHTML='';
+  const nextM=getNextMilestoneFor(pts);
+  MILESTONES.forEach(m=>{
+    const achieved=pts>=m.pts, isNext=nextM&&nextM.pts===m.pts;
+    const row=document.createElement('div'); row.className='milestone-row';
+    row.innerHTML=`<div class="m-dot ${achieved?'achieved':''} ${isNext?'next-up':''}">
+      ${achieved?m.emoji:(isNext?'🎯':'<span style="font-size:0.55rem;color:var(--border)">●</span>')}
+    </div>
+    <div class="m-info">
+      <div class="m-name">${m.emoji} ${m.title} <span style="color:var(--text-dim);font-size:0.72rem">— ${m.pts} clients/month</span></div>
+      <div class="m-sub">${achieved?'✅ Achieved':(isNext?`🎯 Next target — ${m.pts-pts} client${m.pts-pts===1?'':'s'} away`:`${m.pts-pts} clients away`)}</div>
+    </div>
+    ${achieved?'<div class="m-check">✓</div>':''}`;
+    el.appendChild(row);
+  });
+}
+
+function buildFXActions(actions){
+  const el=document.getElementById('fx-actions-list'); el.innerHTML='';
+  if(!actions||!actions.length){
+    el.innerHTML='<p style="color:var(--text-dim);font-size:0.84rem;margin:0;">No actions on record yet — submit your Monthly Business Review to receive priority actions.</p>';
+    return;
+  }
+  actions.forEach((a,i)=>{
+    const div=document.createElement('div'); div.className='action-item';
+    div.innerHTML=`<div class="action-num">${i+1}</div><div>${a}</div>`;
+    el.appendChild(div);
+  });
 }
 
 function drawChart(history) {
@@ -2075,7 +2153,8 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
     if(actRes.error)throw actRes.error;
 
     const feedData=feedRes.data, actData=actRes.data;
-    const feedback=feedData?.content?.map(b=>b.text||'').join('\n').trim()||'Unable to generate feedback at this time.';
+    const feedParts=feedData?.content?.map(b=>b.text||'');
+    const feedback=(feedParts&&feedParts.length?feedParts.join('\n').trim():'')||'Unable to generate feedback at this time.';
 
     let actions=[
       "Organise a model day this month and promote it across your WhatsApp groups, Instagram, and your email database at least two weeks in advance.",

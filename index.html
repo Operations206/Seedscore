@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skin Within — Seedscore Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -573,6 +574,32 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .slider-val { text-align: right; font-size: 0.78rem; color: var(--red); font-weight: 600; margin-top: 0.3rem; }
 
+/* ── Admin Settings ── */
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 600px) { .admin-form-grid { grid-template-columns: 1fr; } }
+.admin-success {
+  font-size: 13px; color: var(--green); background: rgba(74,124,89,0.08);
+  border: 1px solid rgba(74,124,89,0.25); border-radius: var(--radius);
+  padding: 10px 14px; margin-top: 0.75rem; display: none;
+}
+.admin-success.show { display: block; }
+.admin-create-btn {
+  margin-top: 1rem; max-width: 200px;
+  padding: 0.75rem 1.5rem; font-size: 0.85rem;
+}
+.admin-del-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 12px;
+  font-size: 12px; color: var(--grey); cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.admin-del-btn:hover { border-color: var(--red); color: var(--red); }
+
 .submit-btn {
   width: 100%; background: var(--red); color: var(--lp);
   font-family: 'Jost', sans-serif; font-size: 0.9rem; font-weight: 600;
@@ -796,9 +823,7 @@ input[type="range"]::-webkit-slider-thumb {
       <button type="submit" class="btn-primary">Sign in →</button>
     </form>
 
-    <div class="login-hint" id="login-hint">
-      Demo — Head Office: <strong>admin</strong> / <strong>seedscore2026</strong>
-    </div>
+    <div class="login-hint" id="login-hint"></div>
   </div>
 </div>
 
@@ -823,67 +848,135 @@ input[type="range"]::-webkit-slider-thumb {
     </div>
   </header>
 
-  <main class="content">
-    <div class="page-heading">
-      <h2>Network Score Overview</h2>
-      <p>All franchisee Seed Scores as of <span id="ho-date"></span></p>
-    </div>
+  <nav class="app-nav">
+    <div class="nav-tab active" id="ho-tab-network" onclick="showHOPanel('network')">📊 Network Overview</div>
+    <div class="nav-tab"       id="ho-tab-admin"   onclick="showHOPanel('admin')">⚙️ Admin Settings</div>
+  </nav>
 
-    <div class="cards">
-      <div class="card card-accent">
-        <div class="card-label">Total Franchisees</div>
-        <div class="card-value" id="stat-total">—</div>
-        <div class="card-sub">across all regions</div>
+  <!-- NETWORK OVERVIEW PANEL -->
+  <div id="ho-panel-network" class="panel active">
+    <main class="content">
+      <div class="page-heading">
+        <h2>Network Score Overview</h2>
+        <p>All franchisee Seed Scores as of <span id="ho-date"></span></p>
       </div>
-      <div class="card card-green">
-        <div class="card-label">Average Score</div>
-        <div class="card-value" id="stat-avg">—</div>
-        <div class="card-sub">out of 100</div>
-      </div>
-      <div class="card card-yellow">
-        <div class="card-label">Passing</div>
-        <div class="card-value" id="stat-pass">—</div>
-        <div class="card-sub">score ≥ 70</div>
-      </div>
-      <div class="card card-red">
-        <div class="card-label">Need Review</div>
-        <div class="card-value" id="stat-fail">—</div>
-        <div class="card-sub">score &lt; 50</div>
-      </div>
-    </div>
 
-    <div class="table-card">
-      <div class="table-toolbar">
-        <h3>Franchisee Seed Scores</h3>
-        <div class="toolbar-right">
-          <input class="search-input" type="text" id="ho-search" placeholder="Search by name…" oninput="renderHOTable()" />
-          <select class="filter-select" id="ho-region" onchange="renderHOTable()">
-            <option value="">All regions</option>
-          </select>
-          <select class="filter-select" id="ho-status" onchange="renderHOTable()">
-            <option value="">All statuses</option>
-            <option value="Pass">Pass</option>
-            <option value="Review">Review</option>
-            <option value="Fail">Fail</option>
-          </select>
+      <div class="cards">
+        <div class="card card-accent">
+          <div class="card-label">Total Franchisees</div>
+          <div class="card-value" id="stat-total">—</div>
+          <div class="card-sub">across all regions</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">Average Score</div>
+          <div class="card-value" id="stat-avg">—</div>
+          <div class="card-sub">out of 100</div>
+        </div>
+        <div class="card card-yellow">
+          <div class="card-label">Passing</div>
+          <div class="card-value" id="stat-pass">—</div>
+          <div class="card-sub">score ≥ 70</div>
+        </div>
+        <div class="card card-red">
+          <div class="card-label">Need Review</div>
+          <div class="card-value" id="stat-fail">—</div>
+          <div class="card-sub">score &lt; 50</div>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th onclick="hoSort('rank')">#<span class="sort-arrow" id="ha-rank"></span></th>
-            <th onclick="hoSort('name')">Franchisee<span class="sort-arrow" id="ha-name"></span></th>
-            <th onclick="hoSort('region')">Region<span class="sort-arrow" id="ha-region"></span></th>
-            <th onclick="hoSort('score')">Seed Score<span class="sort-arrow" id="ha-score"></span></th>
-            <th onclick="hoSort('trend')">Trend<span class="sort-arrow" id="ha-trend"></span></th>
-            <th onclick="hoSort('status')">Status<span class="sort-arrow" id="ha-status"></span></th>
-          </tr>
-        </thead>
-        <tbody id="ho-tbody"></tbody>
-      </table>
-      <div class="table-footer" id="ho-footer"></div>
-    </div>
-  </main>
+
+      <div class="table-card">
+        <div class="table-toolbar">
+          <h3>Franchisee Seed Scores</h3>
+          <div class="toolbar-right">
+            <input class="search-input" type="text" id="ho-search" placeholder="Search by name…" oninput="renderHOTable()" />
+            <select class="filter-select" id="ho-region" onchange="renderHOTable()">
+              <option value="">All regions</option>
+            </select>
+            <select class="filter-select" id="ho-status" onchange="renderHOTable()">
+              <option value="">All statuses</option>
+              <option value="Pass">Pass</option>
+              <option value="Review">Review</option>
+              <option value="Fail">Fail</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th onclick="hoSort('rank')">#<span class="sort-arrow" id="ha-rank"></span></th>
+              <th onclick="hoSort('name')">Franchisee<span class="sort-arrow" id="ha-name"></span></th>
+              <th onclick="hoSort('region')">Region<span class="sort-arrow" id="ha-region"></span></th>
+              <th onclick="hoSort('score')">Seed Score<span class="sort-arrow" id="ha-score"></span></th>
+              <th onclick="hoSort('trend')">Trend<span class="sort-arrow" id="ha-trend"></span></th>
+              <th onclick="hoSort('status')">Status<span class="sort-arrow" id="ha-status"></span></th>
+            </tr>
+          </thead>
+          <tbody id="ho-tbody"></tbody>
+        </table>
+        <div class="table-footer" id="ho-footer"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ADMIN SETTINGS PANEL -->
+  <div id="ho-panel-admin" class="panel">
+    <main class="content">
+      <div class="page-heading">
+        <h2>Admin Settings</h2>
+        <p>Create and manage franchisee logins.</p>
+      </div>
+
+      <!-- Create new login -->
+      <div class="table-card" style="margin-bottom:1.5rem;">
+        <div class="table-toolbar"><h3>Create New Franchisee Login</h3></div>
+        <div style="padding:1.5rem 2rem 2rem;">
+          <div class="admin-form-grid">
+            <div class="field">
+              <label>Full Name</label>
+              <input type="text" id="admin-name" placeholder="e.g. Jane Smith" />
+            </div>
+            <div class="field">
+              <label>Region</label>
+              <input type="text" id="admin-region" placeholder="e.g. North" />
+            </div>
+            <div class="field">
+              <label>Username</label>
+              <input type="text" id="admin-username" placeholder="e.g. jane.smith" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input type="password" id="admin-password" autocomplete="new-password" />
+            </div>
+            <div class="field">
+              <label>Confirm Password</label>
+              <input type="password" id="admin-confirm" autocomplete="new-password" />
+            </div>
+          </div>
+          <div class="login-error" id="admin-error" style="margin:0.75rem 0 0;display:none;"></div>
+          <div class="admin-success" id="admin-success"></div>
+          <button class="btn-primary admin-create-btn" id="admin-create-btn" onclick="createFranchisee()">Create Login →</button>
+        </div>
+      </div>
+
+      <!-- Existing logins -->
+      <div class="table-card">
+        <div class="table-toolbar"><h3>Active Franchisee Logins</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Region</th>
+              <th>Username</th>
+              <th>Latest Score</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -1354,6 +1447,15 @@ input[type="range"]::-webkit-slider-thumb {
 
 <script>
 /* ════════════════════════════════════════
+   SUPABASE CONFIG
+   Replace these values with your project credentials from:
+   https://app.supabase.com → Project Settings → API
+════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://ajqghhyvlqqufwzugqle.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_mq-4b3OSvdX-bhpGUwSDqw_2dSoNeBj';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════ */
 const FORMSUBMIT_EMAIL = 'bethany@skinwithinaesthetics.co.uk';
@@ -1364,37 +1466,27 @@ const FORMSUBMIT_EMAIL = 'bethany@skinwithinaesthetics.co.uk';
 const HO_CRED = { username: 'admin', password: 'seedscore2026' };
 const MONTHS  = ['Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026'];
 
-const franchisees = [
-  { name: 'Alice Morgan',   region: 'North',  username: 'alice.morgan',   password: 'alice2026',   history: [78,83,87,91,89,94] },
-  { name: 'Ben Okafor',     region: 'South',  username: 'ben.okafor',     password: 'ben2026',     history: [72,75,80,83,86,88] },
-  { name: 'Carla Diaz',     region: 'East',   username: 'carla.diaz',     password: 'carla2026',   history: [90,88,86,87,84,85] },
-  { name: 'David Patel',    region: 'West',   username: 'david.patel',    password: 'david2026',   history: [60,65,71,74,74,82] },
-  { name: 'Elena Russo',    region: 'North',  username: 'elena.russo',    password: 'elena2026',   history: [68,70,72,74,77,79] },
-  { name: 'Frank Yuen',     region: 'South',  username: 'frank.yuen',     password: 'frank2026',   history: [80,78,76,76,76,76] },
-  { name: 'Grace Kim',      region: 'East',   username: 'grace.kim',      password: 'grace2026',   history: [65,67,69,70,72,73] },
-  { name: 'Hassan Ali',     region: 'West',   username: 'hassan.ali',     password: 'hassan2026',  history: [82,80,78,76,73,71] },
-  { name: 'Imani Brooks',   region: 'North',  username: 'imani.brooks',   password: 'imani2026',   history: [55,58,60,63,65,68] },
-  { name: 'James Novak',    region: 'South',  username: 'james.novak',    password: 'james2026',   history: [80,75,72,69,67,65] },
-  { name: 'Keiko Tanaka',   region: 'East',   username: 'keiko.tanaka',   password: 'keiko2026',   history: [50,53,55,57,59,61] },
-  { name: 'Liam Brennan',   region: 'West',   username: 'liam.brennan',   password: 'liam2026',    history: [68,65,62,60,58,57] },
-  { name: 'Maya Singh',     region: 'North',  username: 'maya.singh',     password: 'maya2026',    history: [50,51,53,54,54,54] },
-  { name: 'Nathan Cruz',    region: 'South',  username: 'nathan.cruz',    password: 'nathan2026',  history: [68,63,60,55,52,49] },
-  { name: 'Olivia Park',    region: 'East',   username: 'olivia.park',    password: 'olivia2026',  history: [55,52,50,48,46,44] },
-  { name: 'Peter Walsh',    region: 'West',   username: 'peter.walsh',    password: 'peter2026',   history: [60,56,52,48,44,41] },
-  { name: 'Quinn Roberts',  region: 'North',  username: 'quinn.roberts',  password: 'quinn2026',   history: [30,32,34,35,36,38] },
-  { name: 'Rosa Fontaine',  region: 'South',  username: 'rosa.fontaine',  password: 'rosa2026',    history: [55,50,46,42,38,35] },
-  { name: 'Samuel Adeyemi', region: 'East',   username: 'samuel.adeyemi', password: 'samuel2026',  history: [35,34,33,32,31,31] },
-  { name: 'Tara Whitfield', region: 'West',   username: 'tara.whitfield', password: 'tara2026',    history: [45,42,38,35,30,27] },
-];
+let franchisees = [];
 
-franchisees.forEach(f => {
-  f.score     = f.history[f.history.length-1];
-  f.prevScore = f.history[f.history.length-2];
-  f.trendNum  = f.score - f.prevScore;
-  f.status    = f.score>=70?'Pass':f.score>=50?'Review':'Fail';
-});
-const sorted = [...franchisees].sort((a,b)=>b.score-a.score);
-sorted.forEach((f,i)=>{ f.rank=i+1; });
+function processFranchisees(list) {
+  list.forEach(f => {
+    const h    = Array.isArray(f.history) ? f.history : [];
+    f.history  = h;
+    f.score    = h.length ? h[h.length-1] : 0;
+    f.prevScore= h.length > 1 ? h[h.length-2] : (h.length ? h[0] : 0);
+    f.trendNum = f.score - f.prevScore;
+    f.status   = f.score>=70?'Pass':f.score>=50?'Review':'Fail';
+  });
+  const sorted = [...list].sort((a,b)=>b.score-a.score);
+  sorted.forEach((f,i)=>{ f.rank=i+1; });
+}
+
+async function loadFranchisees() {
+  const { data, error } = await db.from('franchisees').select('*').order('name');
+  if (error) { console.error('Failed to load franchisees:', error); return; }
+  franchisees = data || [];
+  processFranchisees(franchisees);
+}
 
 /* ════════════════════════════════════════
    MILESTONES
@@ -1419,30 +1511,39 @@ function switchTab(role) {
   document.getElementById('tab-ho').classList.toggle('active', role==='ho');
   document.getElementById('tab-fx').classList.toggle('active', role==='fx');
   document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-hint').innerHTML = '';
   if (role==='ho') {
     document.getElementById('login-title').textContent = 'Head Office sign in';
     document.getElementById('login-desc').textContent  = 'Access the full network score dashboard.';
-    document.getElementById('login-hint').innerHTML    = 'Demo: <strong>admin</strong> / <strong>seedscore2026</strong>';
   } else {
     document.getElementById('login-title').textContent = 'Franchisee sign in';
     document.getElementById('login-desc').textContent  = 'View your scores and complete your monthly review.';
-    document.getElementById('login-hint').innerHTML    =
-      'Example: <strong>alice.morgan</strong> / <strong>alice2026</strong><br>Format: firstname.lastname / firstname+year';
   }
 }
 
-document.getElementById('login-form').addEventListener('submit', e => {
+document.getElementById('login-form').addEventListener('submit', async e => {
   e.preventDefault();
-  const u = document.getElementById('l-username').value.trim();
-  const p = document.getElementById('l-password').value;
+  const u   = document.getElementById('l-username').value.trim();
+  const p   = document.getElementById('l-password').value;
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  document.getElementById('login-error').style.display = 'none';
+
   if (activeRole==='ho') {
-    if (u===HO_CRED.username && p===HO_CRED.password) { showApp('ho'); initHODashboard(); }
-    else showLoginError();
+    if (u===HO_CRED.username && p===HO_CRED.password) {
+      await loadFranchisees();
+      showApp('ho');
+      initHODashboard();
+    } else {
+      showLoginError();
+    }
   } else {
+    await loadFranchisees();
     const fx = franchisees.find(f=>f.username===u && f.password===p);
     if (fx) { showApp('fx'); initFXDashboard(fx); }
     else showLoginError();
   }
+  btn.disabled = false;
 });
 
 function showLoginError() { document.getElementById('login-error').style.display='block'; }
@@ -1460,6 +1561,95 @@ function logout() {
   document.getElementById('login-error').style.display = 'none';
   document.getElementById('l-username').value = '';
   document.getElementById('l-password').value = '';
+}
+
+/* ════════════════════════════════════════
+   PANEL SWITCHING (head office)
+════════════════════════════════════════ */
+function showHOPanel(panel) {
+  ['network','admin'].forEach(p => {
+    document.getElementById('ho-panel-'+p).classList.toggle('active', p===panel);
+    document.getElementById('ho-tab-'+p).classList.toggle('active', p===panel);
+  });
+  if (panel==='admin') renderAdminTable();
+}
+
+/* ════════════════════════════════════════
+   ADMIN — CREATE / DELETE FRANCHISEE
+════════════════════════════════════════ */
+async function createFranchisee() {
+  const name     = document.getElementById('admin-name').value.trim();
+  const region   = document.getElementById('admin-region').value.trim();
+  const username = document.getElementById('admin-username').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const confirm  = document.getElementById('admin-confirm').value;
+  const errEl    = document.getElementById('admin-error');
+  const okEl     = document.getElementById('admin-success');
+
+  errEl.style.display = 'none';
+  okEl.classList.remove('show');
+
+  if (!name || !region || !username || !password) {
+    errEl.textContent = 'Please fill in all fields.';
+    errEl.style.display = 'block'; return;
+  }
+  if (password !== confirm) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block'; return;
+  }
+  if (franchisees.find(f => f.username === username)) {
+    errEl.textContent = 'That username is already taken.';
+    errEl.style.display = 'block'; return;
+  }
+
+  const btn = document.getElementById('admin-create-btn');
+  btn.disabled = true;
+
+  const { error } = await db.from('franchisees').insert({ name, region, username, password, history: [] });
+
+  if (error) {
+    errEl.textContent = 'Could not create login: ' + error.message;
+    errEl.style.display = 'block';
+  } else {
+    okEl.textContent = `Login created for ${name}. They can sign in with username "${username}".`;
+    okEl.classList.add('show');
+    ['admin-name','admin-region','admin-username','admin-password','admin-confirm'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    await loadFranchisees();
+    renderAdminTable();
+    initHODashboard();
+  }
+  btn.disabled = false;
+}
+
+async function deleteFranchisee(id, name) {
+  if (!confirm(`Remove login for ${name}? This cannot be undone.`)) return;
+  const { error } = await db.from('franchisees').delete().eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  await loadFranchisees();
+  renderAdminTable();
+  initHODashboard();
+}
+
+function renderAdminTable() {
+  const tbody = document.getElementById('admin-tbody');
+  tbody.innerHTML = '';
+  if (!franchisees.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">No franchisees yet — create the first login above.</td></tr>';
+    return;
+  }
+  [...franchisees].sort((a,b) => a.name.localeCompare(b.name)).forEach(f => {
+    const tr = document.createElement('tr');
+    const sColor = f.score ? scoreColor(f.score) : 'var(--text-dim)';
+    tr.innerHTML = `
+      <td><span class="person-name">${f.name}</span></td>
+      <td><span style="color:var(--text-dim);font-size:13px;">${f.region}</span></td>
+      <td style="font-family:monospace;font-size:12px;color:var(--text-dim);">${f.username}</td>
+      <td><span style="font-weight:600;color:${sColor};">${f.score || '—'}</span></td>
+      <td><button class="admin-del-btn" onclick="deleteFranchisee('${f.id}','${f.name.replace(/'/g,"\\'")}')">Remove</button></td>`;
+    tbody.appendChild(tr);
+  });
 }
 
 /* ════════════════════════════════════════
@@ -1877,14 +2067,15 @@ Clients: ${d.paying} | Networking: ${d.networking.length} | Model day: ${d.model
 Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Each string: 1–2 sentences, starts with a strong action verb. Do not mention AI.`;
 
     const [feedRes,actRes]=await Promise.all([
-      fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,messages:[{role:"user",content:feedbackPrompt}]})}),
-      fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:actionsPrompt}]})})
+      db.functions.invoke('mbr-feedback',{body:{prompt:feedbackPrompt,max_tokens:1200}}),
+      db.functions.invoke('mbr-feedback',{body:{prompt:actionsPrompt,max_tokens:500}})
     ]);
 
-    const feedData=await feedRes.json(),actData=await actRes.json();
-    const feedback=feedData.content?.map(b=>b.text||'').join('\n').trim()||'Unable to generate feedback at this time.';
+    if(feedRes.error)throw feedRes.error;
+    if(actRes.error)throw actRes.error;
+
+    const feedData=feedRes.data, actData=actRes.data;
+    const feedback=feedData?.content?.map(b=>b.text||'').join('\n').trim()||'Unable to generate feedback at this time.';
 
     let actions=[
       "Organise a model day this month and promote it across your WhatsApp groups, Instagram, and your email database at least two weeks in advance.",
@@ -1899,7 +2090,33 @@ Return ONLY a raw JSON array of exactly 3 strings. No markdown, no preamble. Eac
 
     document.getElementById('mbrLoadingText').textContent='Sending your results to head office...';
     document.getElementById('mbrLoadingSub').textContent='Almost done';
-    const emailSent=await sendMbrEmail(d,score,tier,feedback,actions);
+
+    const [emailSent] = await Promise.all([
+      sendMbrEmail(d,score,tier,feedback,actions),
+      db.from('mbr_submissions').insert({
+        franchisee_name:   d.name,
+        location:          d.location,
+        review_month:      d.reviewMonth,
+        email:             d.email||null,
+        score,
+        tier_label:        tier.label,
+        paying_clients:    d.paying,
+        new_clients:       d.newClients,
+        returning_clients: d.returningClients,
+        no_shows:          d.noShows,
+        skinade:           d.skinade,
+        alumier:           d.alumier,
+        google_new:        d.googleNew,
+        networking:        d.networking,
+        model_day:         d.modelDay==='Yes',
+        held_event:        d.heldEvent==='Yes',
+        effort:            d.effort,
+        confidence:        d.confidence,
+        feedback,
+        actions,
+        submitted_at:      new Date().toISOString(),
+      }).then(({error})=>{ if(error) console.warn('Supabase insert error:',error); })
+    ]);
 
     document.getElementById('mbrLoadingWrap').classList.remove('active');
     renderMbrResults(d,score,tier,milestone,nextM,feedback,actions,emailSent);

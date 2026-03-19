@@ -54,8 +54,8 @@ create policy "Allow anonymous inserts"
   to anon
   with check (true);
 
--- Only authenticated users (head office) can read submissions
-create policy "Allow authenticated reads"
+-- Anon users can read submissions (needed for franchisee dashboard)
+create policy "Allow anonymous reads"
   on mbr_submissions for select
-  to authenticated
+  to anon
   using (true);

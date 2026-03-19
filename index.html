@@ -592,6 +592,13 @@ input[type="range"]::-webkit-slider-thumb {
   margin-top: 1rem; max-width: 200px;
   padding: 0.75rem 1.5rem; font-size: 0.85rem;
 }
+.admin-pw-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 12px;
+  font-size: 12px; cursor: pointer; color: var(--text-dim);
+  transition: border-color 0.15s, color 0.15s; margin-right: 6px;
+}
+.admin-pw-btn:hover { border-color: var(--accent); color: var(--accent); }
 .admin-del-btn {
   background: none; border: 1px solid var(--border);
   border-radius: 6px; padding: 4px 12px;
@@ -1659,7 +1666,10 @@ function renderAdminTable() {
       <td><span style="color:var(--text-dim);font-size:13px;">${f.region}</span></td>
       <td style="font-family:monospace;font-size:12px;color:var(--text-dim);">${f.username}</td>
       <td><span style="font-weight:600;color:${sColor};">${f.score || '—'}</span></td>
-      <td><button class="admin-del-btn" onclick="deleteFranchisee('${f.id}','${f.name.replace(/'/g,"\\'")}')">Remove</button></td>`;
+      <td>
+        <button class="admin-pw-btn" onclick="openChangePw('${f.id}','${f.name.replace(/'/g,"\\'")}')">Change Password</button>
+        <button class="admin-del-btn" onclick="deleteFranchisee('${f.id}','${f.name.replace(/'/g,"\\'")}')">Remove</button>
+      </td>`;
     tbody.appendChild(tr);
   });
 }
@@ -2288,6 +2298,65 @@ function scoreColor(s){ return s>=70?'#4a7c59':s>=50?'#c4972a':'#3D0000'; }
 function statusClass(s){ return s==='Pass'?'badge-pass':s==='Review'?'badge-review':'badge-fail'; }
 function trendText(n){ if(n===0)return'—'; return(n>0?'▲ ':'▼ ')+Math.abs(n); }
 function fmtDate(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }
+
+/* ════════════════════════════════════════
+   CHANGE PASSWORD
+════════════════════════════════════════ */
+function openChangePw(id, name) {
+  document.getElementById('cpw-title').textContent = `Change password for ${name}`;
+  document.getElementById('cpw-new').value = '';
+  document.getElementById('cpw-confirm').value = '';
+  document.getElementById('cpw-error').style.display = 'none';
+  document.getElementById('cpw-modal').style.display = 'flex';
+  document.getElementById('cpw-modal').dataset.fxId = id;
+  document.getElementById('cpw-new').focus();
+}
+
+function closeChangePw() {
+  document.getElementById('cpw-modal').style.display = 'none';
+}
+
+async function saveChangePw() {
+  const id      = document.getElementById('cpw-modal').dataset.fxId;
+  const newPw   = document.getElementById('cpw-new').value;
+  const confirm = document.getElementById('cpw-confirm').value;
+  const errEl   = document.getElementById('cpw-error');
+  errEl.style.display = 'none';
+
+  if (!newPw) { errEl.textContent = 'Please enter a new password.'; errEl.style.display='block'; return; }
+  if (newPw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('cpw-save-btn');
+  btn.disabled = true;
+  const { error } = await db.from('franchisees').update({ password: newPw }).eq('id', id);
+  btn.disabled = false;
+
+  if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display='block'; return; }
+  await loadFranchisees();
+  renderAdminTable();
+  closeChangePw();
+}
 </script>
+
+<!-- Change Password Modal -->
+<div id="cpw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeChangePw()">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <h3 id="cpw-title" style="margin:0 0 1.25rem;font-size:1rem;color:var(--text-main);"></h3>
+    <div class="field" style="margin-bottom:0.75rem;">
+      <label>New Password</label>
+      <input type="password" id="cpw-new" autocomplete="new-password" />
+    </div>
+    <div class="field" style="margin-bottom:0.75rem;">
+      <label>Confirm Password</label>
+      <input type="password" id="cpw-confirm" autocomplete="new-password" onkeydown="if(event.key==='Enter')saveChangePw()" />
+    </div>
+    <div id="cpw-error" style="display:none;font-size:13px;color:var(--red);margin-bottom:0.75rem;"></div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="btn-primary" id="cpw-save-btn" onclick="saveChangePw()" style="flex:1;padding:0.65rem;">Save Password</button>
+      <button onclick="closeChangePw()" style="flex:1;padding:0.65rem;background:none;border:1px solid var(--border);border-radius:var(--radius);color:var(--text-dim);cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
